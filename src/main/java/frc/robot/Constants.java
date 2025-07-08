@@ -16,26 +16,34 @@ package frc.robot;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
- * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
- * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
+ * This class defines the runtime mode used by AdvantageKit. The mode is always
+ * "real" when running
+ * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics
+ * sim) and "replay"
  * (log replay from a file).
  */
 public final class Constants {
-  public static final Mode simMode = Mode.SIM;
-  public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+    public static class ModeConstants {
+        public static final Mode simMode = Mode.SIM;
 
-  public static enum Mode {
-    /** Running on a real robot. */
-    REAL,
+        public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-    /** Running a physics simulator. */
-    SIM,
+        public static enum Mode {
+            /** Running on a real robot. */
+            REAL,
 
-    /** Replaying from a log file. */
-    REPLAY
-  }
+            /** Running a physics simulator. */
+            SIM,
 
-  public static class OIConstants {
-    public static final int kDriverControllerPort = 0;
-  }
+            /** Replaying from a log file. */
+            REPLAY
+        }
+    }
+
+    public static class OIConstants {
+        public static final int kDriverControllerPort = 0;
+
+        public static final double kControllerDeadband = 0.15;
+        public static final double kControllerTriggerThreshold = 0.7;
+    }
 }
