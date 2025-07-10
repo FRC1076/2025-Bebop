@@ -8,26 +8,26 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants.IntakeConstants;
 
 public class IntakeIOHardware implements IntakeIO {
-    private final SparkMax m_Motor;
-    private final SparkMaxConfig m_MotorConfig;
+    private final SparkMax m_motor;
+    private final SparkMaxConfig m_motorConfig;
 
     public IntakeIOHardware() {
-        m_Motor = new SparkMax(IntakeConstants.kIntakeMotorCANID, MotorType.kBrushless);
-        m_MotorConfig = new SparkMaxConfig();
-        m_MotorConfig.inverted(false).smartCurrentLimit(IntakeConstants.kIntakeMotorCurrentLimit);
+        m_motor = new SparkMax(IntakeConstants.kIntakeMotorCANID, MotorType.kBrushless);
+        m_motorConfig = new SparkMaxConfig();
+        m_motorConfig.inverted(false).smartCurrentLimit(IntakeConstants.kIntakeMotorCurrentLimit);
 
-        m_Motor.configure(
-            m_MotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        m_motor.configure(
+            m_motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
     @Override
     public void setVoltage(double volts) {
-        m_Motor.setVoltage(volts);
+        m_motor.setVoltage(volts);
     }
 
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
-        inputs.appliedVoltage = m_Motor.getAppliedOutput() * m_Motor.getBusVoltage();
-        inputs.currentAmps = m_Motor.getOutputCurrent();
+        inputs.appliedVoltage = m_motor.getAppliedOutput() * m_motor.getBusVoltage();
+        inputs.currentAmps = m_motor.getOutputCurrent();
     }
 }
