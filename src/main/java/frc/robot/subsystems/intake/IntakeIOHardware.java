@@ -5,6 +5,8 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
 import frc.robot.Constants.IntakeConstants;
 
 public class IntakeIOHardware implements IntakeIO {
@@ -12,9 +14,12 @@ public class IntakeIOHardware implements IntakeIO {
     private final SparkMaxConfig m_motorConfig;
 
     public IntakeIOHardware() {
-        m_motor = new SparkMax(IntakeConstants.kIntakeMotorCANID, MotorType.kBrushless);
+        m_motor = new SparkMax(IntakeConstants.kIntakeMotorCANId, MotorType.kBrushless);
         m_motorConfig = new SparkMaxConfig();
-        m_motorConfig.inverted(false).smartCurrentLimit(IntakeConstants.kIntakeMotorCurrentLimit);
+        m_motorConfig
+            .inverted(false)
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(IntakeConstants.kIntakeMotorCurrentLimit);
 
         m_motor.configure(
             m_motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
