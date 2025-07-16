@@ -11,6 +11,7 @@ public interface ArmIO {
         public double followMotorCurrentAmps = 0;
 
         public double positionRadians = 0;
+        public double velocityRadiansPerSecond = 0;
     }
 
 

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.signals.InvertedValue;
+
 import edu.wpi.first.math.util.Units;
 
 public final class Constants {
@@ -29,7 +31,7 @@ public final class Constants {
         public static final double kAbsoluteEncoderShift = Units.degreesToRadians(20);
 
         public static final boolean kLeadMotorInverted = false;
-        public static final boolean kFollowMotorInverted = false;
+        public static final boolean kFollowMotorInverted = true;
 
         public static final int kCurrentLimitAmps = 40;
 
@@ -49,5 +51,11 @@ public final class Constants {
             public static final double kMaxVelocity = 0;
             public static final double kMaxAcceleration = 0;
         }
+    }
+
+    public static class IndexConstants {
+        public static final int kIndexMotorCANId = 5;
+        public static final boolean kIndexMotorInverted = false;
+        public static final int kIndexMotorCurrentLimit = 20;
     }
 }

@@ -4,8 +4,10 @@ import frc.robot.Constants.ArmConstants;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
-import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -18,6 +20,7 @@ public class ArmIOHardware implements ArmIO {
     private SparkMaxConfig m_followMotorConfig;
 
     private DutyCycleEncoder m_encoder;
+    private RelativeEncoder m_relativeEncoder;
 
     public ArmIOHardware () {
         m_leadMotor = new SparkMax(ArmConstants.kLeadMotorCANId, MotorType.kBrushless);
@@ -37,6 +40,10 @@ public class ArmIOHardware implements ArmIO {
             .follow(m_leadMotor)
             .inverted(ArmConstants.kLeadMotorInverted != ArmConstants.kFollowMotorInverted)
             .smartCurrentLimit(ArmConstants.kCurrentLimitAmps);
+
+        m_leadMotor.configure(m_leadMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
+        m_relativeEncoder = m_leadMotor.getEncoder();
     }
 
     private double getPositionRadians() {   
@@ -59,5 +66,6 @@ public class ArmIOHardware implements ArmIO {
         inputs.followMotorCurrentAmps = m_followMotor.getOutputCurrent();
 
         inputs.positionRadians = getPositionRadians();
+        inputs.velocityRadiansPerSecond = m_relativeEncoder.getVelocity();
     }
 }

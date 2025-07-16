@@ -42,7 +42,7 @@ public class ArmSubsystem extends SubsystemBase {
             volts = 0;
         }
 
-        io.setVoltage(volts /*+ feedForwardController.calculate(inputs.positionRadians, VELOCITY HERE) */);
+        io.setVoltage(volts + feedForwardController.calculate(inputs.positionRadians, inputs.velocityRadiansPerSecond));
     }
 
     public void setRunPID(boolean runPID) {

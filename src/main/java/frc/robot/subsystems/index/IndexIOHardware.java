@@ -1,25 +1,25 @@
-package frc.robot.subsystems.intake;
+package frc.robot.subsystems.index;
+
+import frc.robot.Constants.IndexConstants;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
-import frc.robot.Constants.IntakeConstants;
-
-public class IntakeIOHardware implements IntakeIO {
+public class IndexIOHardware implements IndexIO {
     private final SparkMax m_motor;
     private final SparkMaxConfig m_motorConfig;
 
-    public IntakeIOHardware() {
-        m_motor = new SparkMax(IntakeConstants.kIntakeMotorCANId, MotorType.kBrushless);
+    public IndexIOHardware() {
+        m_motor = new SparkMax(IndexConstants.kIndexMotorCANId, MotorType.kBrushless);
         m_motorConfig = new SparkMaxConfig();
         m_motorConfig
-            .inverted(IntakeConstants.kIntakeMotorInverted)
+            .inverted(IndexConstants.kIndexMotorInverted)
             .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kIntakeMotorCurrentLimit);
+            .smartCurrentLimit(IndexConstants.kIndexMotorCurrentLimit);
 
         m_motor.configure(
             m_motorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -31,7 +31,7 @@ public class IntakeIOHardware implements IntakeIO {
     }
 
     @Override
-    public void updateInputs(IntakeIOInputs inputs) {
+    public void updateInputs(IndexIOInputs inputs) {
         inputs.appliedVoltage = m_motor.getAppliedOutput() * m_motor.getBusVoltage();
         inputs.currentAmps = m_motor.getOutputCurrent();
     }
