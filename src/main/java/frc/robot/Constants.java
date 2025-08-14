@@ -81,4 +81,113 @@ public final class Constants {
             public static final double kDRight = 0;
         }
     }
+
+    public static class SuperstructureConstants {
+        public enum MechanismState {
+            // TODO: Tune constants, especially shooting speeds
+
+            /** Basic state with no note */
+            HOME(
+                0,
+                0,
+                -0.6457718, 
+                0, 
+                0),
+
+            /** Pick up a note from the ground */
+            INTAKE(
+                10, 
+                4, 
+                -0.6457718, 
+                0, 
+                0),
+
+            /** Pre-shooting state for when at subwoofer, lowest and therefore default shooting state */
+            SUBWOOFER(
+                0, 
+                0, 
+                -0.4014257, 
+                -471, 
+                576),
+
+            /** Pre-shooting state, angle just between subwoofer and mid-high */
+            MID_LOW(
+                0, 
+                0, 
+                0, 
+                -400, 
+                489),
+
+            /** Pre-shooting state, angle between mid-low and amp */
+            MID_HIGH(
+                0, 
+                0, 
+                0.5, 
+                -350, 
+                428),
+            
+            /** Pre-shooting state for when at the amp, highest shooting state */
+            AMP(
+                0, 
+                0, 
+                1.3, 
+                -250, 
+                280),
+            
+            /** Shoot into the subwoofer */
+            SHOOT_SUBWOOFER(
+                0, 
+                4, 
+                SUBWOOFER.armPositionRadians, 
+                SUBWOOFER.shooterLeftSpeedRadPerSec * 1.2, 
+                SUBWOOFER.shooterRightSpeedRadPerSec * 1.2),
+            
+            /** Shoot while mid-low */
+            SHOOT_MID_LOW(
+                0,
+                4,
+                MID_LOW.armPositionRadians,
+                MID_LOW.shooterLeftSpeedRadPerSec * 1.2,
+                MID_LOW.shooterRightSpeedRadPerSec * 1.2
+            ),
+
+            /** Shoot while mid-high */
+            SHOOT_MID_HIGH(
+                0,
+                4,
+                MID_HIGH.armPositionRadians,
+                MID_HIGH.shooterLeftSpeedRadPerSec * 1.2,
+                MID_HIGH.shooterRightSpeedRadPerSec * 1.2
+            ),
+            
+            /** Shoot into the amp */
+            SHOOT_AMP(
+                0,
+                4,
+                AMP.armPositionRadians,
+                AMP.shooterLeftSpeedRadPerSec * 1.2,
+                AMP.shooterRightSpeedRadPerSec * 1.2
+            );
+
+            public final double intakeVolts;
+            public final double indexVolts;
+            public final double armPositionRadians;
+            public final double shooterLeftSpeedRadPerSec;
+            public final double shooterRightSpeedRadPerSec;
+            
+            private MechanismState(
+                double intakeVolts,
+                double indexVolts,
+                double armPositionRadians,
+                double shooterLeftSpeedRadPerSec,
+                double shooterRightSpeedRadPerSec
+            ) {
+                this.intakeVolts = intakeVolts;
+                this.indexVolts = indexVolts;
+                this.armPositionRadians = armPositionRadians;
+                this.shooterLeftSpeedRadPerSec = shooterLeftSpeedRadPerSec;
+                this.shooterRightSpeedRadPerSec = shooterRightSpeedRadPerSec;
+            }
+        }
+    }
 }
