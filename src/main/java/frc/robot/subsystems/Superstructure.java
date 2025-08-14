@@ -11,7 +11,14 @@ import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
+/**
+ * The Superstructure class contains all of subsystems and commands for the robot's Superstructure.
+ * This allows all of the subsystems to talk to each other,
+ * allows the sensors to interact with subystems, and 
+ * contains command factories for actions requiring multiple subsystems.
+ */
 public class Superstructure {
+    /** A mutable (you can change the state after instantiation) class representing the Superstructure's desired state. */
     public static class MutableSuperState {
         protected MechanismState mechanismState;
         protected BooleanSupplier hasNote;
@@ -83,6 +90,9 @@ public class Superstructure {
         return this.superState;
     }
 
+    /** Contains all of the command factories for the Superstructure
+     * (and all of the commands that use those command factories).
+     */
     public class SuperstructureCommandFactory {
         private final Superstructure superstructure;
 
