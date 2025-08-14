@@ -35,8 +35,8 @@ public final class Constants {
 
         public static final int kCurrentLimitAmps = 40;
 
-        public static final double kMaxPositionRadians = Math.PI / 2.0;
-        public static final double kMinPositionRadians = -0.5 * Math.PI; // *** TO BE DETERMINED ***
+        public static final double kMaxPositionRadians = Math.PI / 2.0; // TODO: Confirm
+        public static final double kMinPositionRadians = -0.5 * Math.PI; // TODO: Confirm
 
         public static class Control {
             // *** TO BE DETERMINED FROM PYTHON CODE OR PHYSICAL TUNING ***
@@ -57,5 +57,28 @@ public final class Constants {
         public static final int kIndexMotorCANId = 5;
         public static final boolean kIndexMotorInverted = false;
         public static final int kIndexMotorCurrentLimit = 20;
+    }
+    
+    public static class ShooterConstants {
+        public static final int kLeftMotorCanId = 28;
+        public static final int kRightMotorCanId = 8;
+
+        public static final boolean kLeftMotorInverted = false; // TODO: Confirm
+        public static final boolean kRightMotorInverted = false; // TODO: Confirm
+
+        public static final int kCurrentLimitAmps = 40;
+
+        public static final double kVelocityConversionFactor = 2 * Math.PI; // TODO: Confirm
+        
+        public static class Control {
+            // TODO: Tune or get from Python code
+            public static final double kPLeft = 0;
+            public static final double kILeft = 0;
+            public static final double kDLeft = 0;
+
+            public static final double kPRight = 0;
+            public static final double kIRight = 0;
+            public static final double kDRight = 0;
+        }
     }
 }
