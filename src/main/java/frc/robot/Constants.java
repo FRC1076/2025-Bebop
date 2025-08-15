@@ -16,6 +16,15 @@ public final class Constants {
         public static final double kControllerTriggerThreshold = 0.7;
     }
 
+    public static class SystemConstants {
+        public static final RobotMode currentMode = RobotMode.REAL;
+        
+        public static enum RobotMode {
+            REAL,
+            SIM;
+        }
+    }
+
     public static class IntakeConstants {
         public static final int kIntakeMotorCANId = 5;
         public static final boolean kIntakeMotorInverted = false;
@@ -37,6 +46,8 @@ public final class Constants {
 
         public static final double kMaxPositionRadians = Math.PI / 2.0; // TODO: Confirm
         public static final double kMinPositionRadians = -0.5 * Math.PI; // TODO: Confirm
+
+        public static final double kToleranceRadians = 0.1; // TODO: Confirm
 
         public static class Control {
             // *** TO BE DETERMINED FROM PYTHON CODE OR PHYSICAL TUNING ***
@@ -83,6 +94,8 @@ public final class Constants {
     }
 
     public static class SuperstructureConstants {
+        public static final double kArmMoveDebounceTimeAfterShoot = 0.2;
+
         public enum MechanismState {
             // TODO: Tune constants, especially shooting speeds
 

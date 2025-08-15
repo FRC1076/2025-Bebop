@@ -1,15 +1,27 @@
 package frc.robot.subsystems;
 
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.SuperstructureConstants;
 import frc.robot.Constants.SuperstructureConstants.MechanismState;
 import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.index.IndexSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import lib.extendedcommands.SelectWithFallbackCommandFactory;
+import lib.utils.MathHelpers;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.AutoLogOutput;
+
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 
 /**
  * The Superstructure class contains all of subsystems and commands for the robot's Superstructure.
@@ -37,9 +49,13 @@ public class Superstructure {
             this.mechanismState = state;
         }
 
-        @AutoLogOutput(key="SuperState/MechanismState")
         public MechanismState getMechanismState() {
             return this.mechanismState;
+        }
+
+        @AutoLogOutput(key="SuperState/MechanismState")
+        public String getMechanismStateString() {
+            return this.mechanismState.toString();
         }
 
         @AutoLogOutput(key="SuperState/HassNote")
@@ -55,6 +71,8 @@ public class Superstructure {
 
     private final MutableSuperState superState;
 
+    public final SuperstructureCommandFactory commandBuilder;
+
     public Superstructure(
         ArmSubsystem arm,
         IndexSubsystem index,
@@ -68,6 +86,8 @@ public class Superstructure {
         this.m_shooter = shooter;
 
         this.superState = new MutableSuperState(hasNoteSupplier);
+
+        this.commandBuilder = new SuperstructureCommandFactory(this);
     }
 
     public ArmSubsystem getArmSubsystem() {
@@ -90,15 +110,159 @@ public class Superstructure {
         return this.superState;
     }
 
+    public SuperstructureCommandFactory getCommandbuilder() {
+        return this.commandBuilder;
+    }
+
+    /** Sets the state of the robot based on the arm's position and whether we have a note */
+    public void detectState() {
+        if (!superState.hasNote()) {
+            superState.setMechanismState(MechanismState.HOME);
+        } else if (m_arm.getPosition() < MathHelpers.getAverage(
+            MechanismState.SUBWOOFER.armPositionRadians,
+            MechanismState.MID_LOW.armPositionRadians)
+        ) {
+            superState.setMechanismState(MechanismState.SUBWOOFER);
+        } else if (m_arm.getPosition() < MathHelpers.getAverage(
+            MechanismState.MID_LOW.armPositionRadians,
+            MechanismState.MID_HIGH.armPositionRadians)
+        ) {
+            superState.setMechanismState(MechanismState.MID_LOW);
+        } else if (m_arm.getPosition() < MathHelpers.getAverage(
+            MechanismState.MID_HIGH.armPositionRadians,
+            MechanismState.AMP.armPositionRadians)
+        ) {
+            superState.setMechanismState(MechanismState.MID_HIGH);
+        } else {
+            superState.setMechanismState(MechanismState.AMP);
+        }
+    }
+
+    /**
+     * Apply a state to the mechanisms, with the arm achieving the desired position
+     * before any of the other subsystems have their state set. 
+     * 
+     * @param state Desired state of the robot
+     * @return A Command that applies the desired state
+     */
+    private Command applyStateArmFirst(MechanismState state) {
+        superState.setMechanismState(state);
+
+        return Commands.sequence(
+            m_arm.startPid(state.armPositionRadians),
+            Commands.waitUntil(() -> m_arm.withinTolerance(ArmConstants.kToleranceRadians)),
+            Commands.parallel(
+                m_intake.runVolts(state.intakeVolts),
+                m_index.runVolts(state.indexVolts),
+                m_shooter.startPid(state.shooterLeftSpeedRadPerSec, state.shooterRightSpeedRadPerSec)
+            )
+        ); 
+    }
+
+    /**
+     * Apply the desired state to of the subsystems at once,
+     * 
+     * @param state The desired state of the robot
+     * @return A Command that applies the desired state
+     */
+    private Command applyStateAllParallel(MechanismState state) {
+        superState.setMechanismState(state);
+
+        return Commands.parallel(
+            m_arm.startPid(state.armPositionRadians),
+            m_intake.runVolts(state.intakeVolts),
+            m_index.runVolts(state.indexVolts),
+            m_shooter.startPid(state.shooterLeftSpeedRadPerSec, state.shooterRightSpeedRadPerSec)
+        );
+    }
+
+    /**
+     * Apply the desired state to all the subsystems on the robot, except for the arm.
+     * 
+     * @param state The desired state of the robot
+     * @return A Command that applies the desired state
+     */
+    private Command applyStateNoArmMove(MechanismState state) {
+        superState.setMechanismState(state);
+
+        return Commands.parallel(
+            m_intake.runVolts(state.intakeVolts),
+            m_index.runVolts(state.indexVolts),
+            m_shooter.startPid(state.shooterLeftSpeedRadPerSec, state.shooterRightSpeedRadPerSec)
+        );
+    }
+
     /** Contains all of the command factories for the Superstructure
      * (and all of the commands that use those command factories).
      */
     public class SuperstructureCommandFactory {
         private final Superstructure superstructure;
+        private final Map<MechanismState, MechanismState> scoringStates = new HashMap<MechanismState, MechanismState>();
 
         private SuperstructureCommandFactory(Superstructure superstructure) {
             this.superstructure = superstructure;
+
+            scoringStates.put(MechanismState.SUBWOOFER, MechanismState.SHOOT_SUBWOOFER);
+            scoringStates.put(MechanismState.MID_LOW, MechanismState.SHOOT_MID_LOW);
+            scoringStates.put(MechanismState.MID_HIGH, MechanismState.SHOOT_MID_HIGH);
+            scoringStates.put(MechanismState.AMP, MechanismState.SHOOT_AMP);
+        }
+
+        /** Command to go to the home state */
+        public Command home() {
+            return applyStateAllParallel(MechanismState.HOME);
+        }
+        
+        /** Command to go to the intake state.
+         *  Once a note is obtained, automatically goes to the subwoofer state.
+         */
+        public Command intake() {
+            return Commands.sequence(
+                applyStateArmFirst(MechanismState.INTAKE),
+                Commands.waitUntil(superstructure.superState.hasNote),
+                applyStateAllParallel(MechanismState.SUBWOOFER)
+            );
+        }
+
+        /** Command to go to the subwoofer pre-scoring state */
+        public Command subwoofer() {
+            return applyStateAllParallel(MechanismState.SUBWOOFER);
+        }
+
+        /** Command to go to the mid-low pre-scoring state */
+        public Command midLow() {
+            return applyStateAllParallel(MechanismState.MID_LOW);
+        }
+        /** Command to go to the mid-high pre-scoring state */
+        public Command midHigh() {
+            return applyStateAllParallel(MechanismState.MID_HIGH);
+        }
+        
+        /** Command to go to the amp pre-scoring state */
+        public Command amp() {
+            return applyStateAllParallel(MechanismState.AMP);
+        }
+
+        /** Command to shoot the note based on the pre-scoring state.
+         *  Once the note has been shot, returns to the home state.
+         */
+        public Command shoot() {
+            return Commands.sequence(
+                applyStateNoArmMove(
+                    scoringStates.getOrDefault(superstructure.superState.getMechanismState(), MechanismState.SHOOT_MID_HIGH)
+                ),
+                Commands.waitUntil(
+                    new Trigger(superstructure.superState.hasNote)
+                        .debounce(SuperstructureConstants.kArmMoveDebounceTimeAfterShoot)
+                ),
+                applyStateAllParallel(MechanismState.HOME)
+            );
+        }
+
+        /** Detect the mechanism state based on the arm's position after manual control */
+        public Command detectMechanismState() {
+            return Commands.runOnce(() -> superstructure.detectState());
         }
     }
 } 
-     
+    
