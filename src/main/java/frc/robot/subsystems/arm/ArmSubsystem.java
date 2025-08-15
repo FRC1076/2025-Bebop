@@ -45,12 +45,20 @@ public class ArmSubsystem extends SubsystemBase {
         io.setVoltage(volts + feedForwardController.calculate(inputs.positionRadians, inputs.velocityRadiansPerSecond));
     }
 
-    public void setRunPID(boolean runPID) {
+    public double getPosition() {
+        return inputs.positionRadians;
+    }
+
+    public void setRunPid(boolean runPID) {
         this.runPID = runPID;
     }
 
-    public void setPIDTarget(double targetRadians) {
+    public void setPidTarget(double targetRadians) {
         PIDTargetRadians = targetRadians;
+    }
+
+    public boolean withinTolerance(double toleranceRadians) {
+        return Math.abs(PIDTargetRadians - inputs.positionRadians) < toleranceRadians;
     }
 
     @Override
@@ -64,15 +72,15 @@ public class ArmSubsystem extends SubsystemBase {
         Logger.processInputs("Arm", inputs);
     }
 
-    public Command startPID(double goalRadians) {
+    public Command startPid(double goalRadians) {
         return Commands.sequence(
             Commands.runOnce(() -> pidController.reset(inputs.positionRadians)),
-            Commands.runOnce(() -> setPIDTarget(goalRadians)),
-            Commands.runOnce(() -> setRunPID(true))
+            Commands.runOnce(() -> setPidTarget(goalRadians)),
+            Commands.runOnce(() -> setRunPid(true))
         );
     }
 
     public Command stopPID() {
-        return runOnce(() -> setRunPID(false));
+        return runOnce(() -> setRunPid(false));
     }
 }
