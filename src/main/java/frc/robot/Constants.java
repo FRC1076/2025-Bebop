@@ -65,7 +65,7 @@ public final class Constants {
     }
 
     public static class IndexConstants {
-        public static final int kIndexMotorCANId = 5;
+        public static final int kIndexMotorCANId = 61;
         public static final boolean kIndexMotorInverted = false;
         public static final int kIndexMotorCurrentLimit = 20;
     }
