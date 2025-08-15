@@ -6,6 +6,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.SystemConstants;
+import frc.robot.Constants.SystemConstants.RobotMode;
 
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -32,10 +34,13 @@ public class Robot extends LoggedRobot {
   public Robot() {
     Logger.recordMetadata("ProjectName", "2025-Bebop"); // Set a metadata value
 
-    if (isReal()) {
+    if (SystemConstants.currentMode == RobotMode.REAL) {
         Logger.addDataReceiver(new WPILOGWriter()); // Log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+    } else if (SystemConstants.currentMode == RobotMode.SIM) {
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
     } else {
+        // Replay!
         setUseTiming(false); // Run as fast as possible
         String logPath = LogFileUtil.findReplayLog(); // Pull the replay log from AdvantageScope (or prompt the user)
         Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log

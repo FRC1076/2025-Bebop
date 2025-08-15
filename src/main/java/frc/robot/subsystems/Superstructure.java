@@ -58,7 +58,7 @@ public class Superstructure {
             return this.mechanismState.toString();
         }
 
-        @AutoLogOutput(key="SuperState/HassNote")
+        @AutoLogOutput(key="SuperState/HasNote")
         public boolean hasNote() {
             return this.hasNote.getAsBoolean();
         }

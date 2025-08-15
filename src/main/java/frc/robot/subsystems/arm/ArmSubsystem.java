@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ArmSubsystem extends SubsystemBase {
     private ArmIO io;
-    private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+    private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged(); // TODO: Add PID setpoint to logged inputs
 
     private ProfiledPIDController pidController;
     private boolean runPID = false;
