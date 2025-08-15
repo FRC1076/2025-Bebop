@@ -2,6 +2,8 @@ package frc.robot.subsystems.index;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IndexSubsystem extends SubsystemBase {
@@ -18,6 +20,13 @@ public class IndexSubsystem extends SubsystemBase {
 
     public void stop() {
         io.setVoltage(0);
+    }
+
+    public Command runVolts(double volts) {
+        return Commands.run(
+            () -> setVoltage(volts),
+            this
+        );
     }
     
     @Override
