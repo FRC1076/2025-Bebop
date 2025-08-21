@@ -11,26 +11,34 @@ package frc.robot;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.SystemConstants;
 import frc.robot.Constants.SystemConstants.RobotMode;
+import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
 import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.DriveClosedLoopTeleop;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.SuperstructureCommandFactory;
+import frc.robot.subsystems.arm.ArmIODisabled;
 import frc.robot.subsystems.arm.ArmIOHardware;
 import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.drive.GyroIOPigeon;
+import frc.robot.subsystems.drive.ModuleIOHardware;
+import frc.robot.subsystems.index.IndexIODisabled;
 import frc.robot.subsystems.index.IndexIOHardware;
 import frc.robot.subsystems.index.IndexSubsystem;
+import frc.robot.subsystems.intake.IntakeIODisabled;
 import frc.robot.subsystems.intake.IntakeIOHardware;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.shooter.ShooterIODisabled;
 import frc.robot.subsystems.shooter.ShooterIOHardware;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import lib.hardware.BeamBreak;
+import lib.hardware.hid.SamuraiXboxController;
 
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import lib.hardware.hid.SamuraiXboxController;
 
 
 /**
@@ -42,30 +50,71 @@ import lib.hardware.hid.SamuraiXboxController;
 public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
-    // private final DriveSubsystem m_drive;
+    private final DriveSubsystem m_drive;
     private final ArmSubsystem m_arm;
     private final IndexSubsystem m_index;
     private final IntakeSubsystem m_intake;
     private final ShooterSubsystem m_shooter;
 
+    private final BeamBreak m_beamBreak;
+
+    private final Superstructure m_superstructure;
+
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final SamuraiXboxController m_driverController =
-        new SamuraiXboxController(OIConstants.kDriverControllerPort);
+        new SamuraiXboxController(OIConstants.kDriverControllerPort)
+        .withDeadband(OIConstants.kControllerDeadband)
+        .withTriggerThreshold(OIConstants.kControllerTriggerThreshold);
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
+        m_beamBreak = new BeamBreak(OIConstants.kBeamBreakPin);
+
         if (SystemConstants.currentMode == RobotMode.REAL) {
             m_arm = new ArmSubsystem(new ArmIOHardware());
             m_index = new IndexSubsystem(new IndexIOHardware());
             m_intake = new IntakeSubsystem(new IntakeIOHardware());
             m_shooter = new ShooterSubsystem(new ShooterIOHardware());
+
+            m_drive = new DriveSubsystem(
+                new GyroIOPigeon(),
+                new ModuleIOHardware(ModuleConfig.FrontLeft), 
+                new ModuleIOHardware(ModuleConfig.FrontRight), 
+                new ModuleIOHardware(ModuleConfig.RearLeft), 
+                new ModuleIOHardware(ModuleConfig.RearRight)
+            );
         } else {
-            // TODO: Replaced with Disabled IO layers
-            m_arm = new ArmSubsystem(new ArmIOHardware());
-            m_index = new IndexSubsystem(new IndexIOHardware());
-            m_intake = new IntakeSubsystem(new IntakeIOHardware());
-            m_shooter = new ShooterSubsystem(new ShooterIOHardware());
+            m_arm = new ArmSubsystem(new ArmIODisabled());
+            m_index = new IndexSubsystem(new IndexIODisabled());
+            m_intake = new IntakeSubsystem(new IntakeIODisabled());
+            m_shooter = new ShooterSubsystem(new ShooterIODisabled());
+
+            // TODO: replace Drive with disabled?
+            m_drive = new DriveSubsystem(
+                new GyroIOPigeon(),
+                new ModuleIOHardware(ModuleConfig.FrontLeft), 
+                new ModuleIOHardware(ModuleConfig.FrontRight), 
+                new ModuleIOHardware(ModuleConfig.RearLeft), 
+                new ModuleIOHardware(ModuleConfig.RearRight)
+            );
         }
+
+        m_superstructure = new Superstructure(
+            m_arm,
+            m_index,
+            m_intake,
+            m_shooter,
+            m_beamBreak.beamBrokenSupplier()
+        );
+
+        m_drive.setDefaultCommand(
+            new DriveClosedLoopTeleop(
+                () -> m_driverController.getLeftY(),
+                () -> m_driverController.getLeftX(), 
+                () -> m_driverController.getRightX(),
+                m_drive
+            )
+        );
 
         // Configure bindings
         configureDriverBindings();
@@ -73,7 +122,53 @@ public class RobotContainer {
 
     /** Bind Triggers from the DriverController to Superstructure Commands. */
     private void configureDriverBindings() {
-        // final SuperstructureCommandFactory superstructureCommands;
+        final SuperstructureCommandFactory superstructureCommands = m_superstructure.getCommandbuilder();
+        
+        // TODO: check if all of these should be onTrue or whileTrue
+
+        // Intake note
+        m_driverController.leftTrigger()
+            .whileTrue(superstructureCommands.intake());
+        
+        // Shoot note
+        m_driverController.rightTrigger()
+            .whileTrue(superstructureCommands.shoot());
+
+        // Go to subwoofer position
+        m_driverController.a()
+            .onTrue(superstructureCommands.subwoofer());
+
+        // Go to mid-low position
+        m_driverController.b()
+            .onTrue(superstructureCommands.midLow());
+
+        // Go to mid-high position
+        m_driverController.x()
+            .onTrue(superstructureCommands.midHigh());
+
+        // Go to amp posotion
+        m_driverController.y()
+            .onTrue(superstructureCommands.amp());
+        
+        // Manually move the arm up
+        m_driverController.povUp()
+            .whileTrue(superstructureCommands.armUpManual())
+            .onFalse(superstructureCommands.detectMechanismState());
+
+        // Manually move the arm down
+        m_driverController.povDown()
+            .whileTrue(superstructureCommands.armDownManual())
+            .onFalse(superstructureCommands.detectMechanismState());
+
+        // Force all rollers (intake, index, shooter) to run backward
+        m_driverController.povLeft()
+            .whileTrue(superstructureCommands.forceBackward())
+            .onFalse(superstructureCommands.detectMechanismState());
+        
+        // Force all rollers (intake, index, shooter) to run forward
+        m_driverController.povRight()
+            .whileTrue(superstructureCommands.forceForward())
+            .onFalse(superstructureCommands.detectMechanismState());
     }
 
     /**

@@ -1,3 +1,7 @@
+// Copyright (c) FRC 1076 PiHi Samurai
+// You may use, distribute, and modify this software under the terms of
+// the license found in the root directory of this project
+
 package frc.robot.subsystems;
 
 import frc.robot.Constants.ArmConstants;
@@ -7,21 +11,17 @@ import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.index.IndexSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
-import lib.extendedcommands.SelectWithFallbackCommandFactory;
 import lib.utils.MathHelpers;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 
 /**
  * The Superstructure class contains all of subsystems and commands for the robot's Superstructure.
@@ -262,6 +262,48 @@ public class Superstructure {
         /** Detect the mechanism state based on the arm's position after manual control */
         public Command detectMechanismState() {
             return Commands.runOnce(() -> superstructure.detectState());
+        }
+
+        public Command forceForward() {
+            return Commands.parallel(
+                m_intake.runVolts(SuperstructureConstants.kIntakeManualControlVoltage),
+                m_index.runVolts(SuperstructureConstants.kIndexManualControlVoltage),
+                Commands.run(
+                    () -> m_shooter.setVoltage(
+                        SuperstructureConstants.kShooterLeftManualControlVoltage,
+                        SuperstructureConstants.kShooterRightManualControlVoltage
+                    ),
+                    m_shooter
+                )
+            );
+        }
+        
+        public Command forceBackward() {
+            return Commands.parallel(
+                m_intake.runVolts(SuperstructureConstants.kIntakeManualControlVoltage * -1),
+                m_index.runVolts(SuperstructureConstants.kIndexManualControlVoltage * -1),
+                Commands.run(
+                    () -> m_shooter.setVoltage(
+                        SuperstructureConstants.kShooterLeftManualControlVoltage * -1,
+                        SuperstructureConstants.kShooterRightManualControlVoltage * -1
+                    ),
+                    m_shooter
+                )
+            );
+        }
+
+        public Command armUpManual() {
+            return Commands.run(
+                () -> m_arm.setVoltage(SuperstructureConstants.kArmManualControlVoltage),
+                m_arm
+            );
+        }
+        
+        public Command armDownManual() {
+            return Commands.run(
+                () -> m_arm.setVoltage(SuperstructureConstants.kArmManualControlVoltage * -1),
+                m_arm
+            );
         }
     }
 } 
