@@ -106,7 +106,7 @@ public class Superstructure {
         return m_shooter;
     }
     
-    public MutableSuperState gMutableSuperState() {
+    public MutableSuperState getMutableSuperState() {
         return this.superState;
     }
 
@@ -160,7 +160,7 @@ public class Superstructure {
     }
 
     /**
-     * Apply the desired state to of the subsystems at once,
+     * Apply the desired state to of the subsystems at once.
      * 
      * @param state The desired state of the robot
      * @return A Command that applies the desired state
@@ -252,7 +252,7 @@ public class Superstructure {
                     scoringStates.getOrDefault(superstructure.superState.getMechanismState(), MechanismState.SHOOT_MID_HIGH)
                 ),
                 Commands.waitUntil(
-                    new Trigger(superstructure.superState.hasNote)
+                    new Trigger(superstructure.superState.hasNote).negate()
                         .debounce(SuperstructureConstants.kArmMoveDebounceTimeAfterShoot)
                 ),
                 applyStateAllParallel(MechanismState.HOME)
@@ -264,6 +264,7 @@ public class Superstructure {
             return Commands.runOnce(() -> superstructure.detectState());
         }
 
+        /** Runs all rollers (intake, index, and shooter) forward */
         public Command forceForward() {
             return Commands.parallel(
                 m_intake.runVolts(SuperstructureConstants.kIntakeManualControlVoltage),
@@ -278,6 +279,7 @@ public class Superstructure {
             );
         }
         
+        /** Runs all rollers (intake, index, shooter) backward */
         public Command forceBackward() {
             return Commands.parallel(
                 m_intake.runVolts(SuperstructureConstants.kIntakeManualControlVoltage * -1),
@@ -292,6 +294,7 @@ public class Superstructure {
             );
         }
 
+        /** Manually move the arm up */
         public Command armUpManual() {
             return Commands.run(
                 () -> m_arm.setVoltage(SuperstructureConstants.kArmManualControlVoltage),
@@ -299,6 +302,7 @@ public class Superstructure {
             );
         }
         
+        /** Manually move the arm down */
         public Command armDownManual() {
             return Commands.run(
                 () -> m_arm.setVoltage(SuperstructureConstants.kArmManualControlVoltage * -1),

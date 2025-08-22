@@ -13,6 +13,7 @@ public interface IndexIO {
         public double currentAmps = 0;
     }
 
+    /** Set the voltage of the motor */
     public abstract void setVoltage(double volts);
 
     public abstract void updateInputs(IndexIOInputs inputs);

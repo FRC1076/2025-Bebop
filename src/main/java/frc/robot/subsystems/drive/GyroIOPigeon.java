@@ -46,6 +46,11 @@ public class GyroIOPigeon implements GyroIO {
     }
 
     @Override
+    public void reset() {
+        m_gyro.reset();
+    }
+
+    @Override
     public void updateInputs(GyroIOInputs inputs){
         inputs.connected = BaseStatusSignal.refreshAll(yaw,yawVelocity).equals(StatusCode.OK);
         inputs.yawPosition = new Rotation2d(yaw.getValue());

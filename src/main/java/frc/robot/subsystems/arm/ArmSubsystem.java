@@ -28,17 +28,25 @@ public class ArmSubsystem extends SubsystemBase {
 
     public ArmSubsystem(ArmIO io) {
         this.io = io;
+
         pidController = new ProfiledPIDController(
             Control.kP,
             Control.kI,
             Control.kD,
-            new Constraints(Control.kMaxVelocity, Control.kMaxAcceleration));
+            new Constraints(Control.kMaxVelocity, Control.kMaxAcceleration)
+        );
+
         feedForwardController = new ArmFeedforward(
             Control.kS,
             Control.kG, 
-            Control.kV);
+            Control.kV
+        );
     }
     
+    /** Sets the voltage of the motors.
+     *  Includes one way software stops
+     *  (will not run up past the maximum position or down below the minimum position)
+     */
     public void setVoltage(double volts) {
         if (inputs.positionRadians > ArmConstants.kMaxPositionRadians && volts > 0) {
             volts = 0;
@@ -49,18 +57,25 @@ public class ArmSubsystem extends SubsystemBase {
         io.setVoltage(volts + feedForwardController.calculate(inputs.positionRadians, inputs.velocityRadiansPerSecond));
     }
 
+    /** Returns the position of the arms in radians */
     public double getPosition() {
         return inputs.positionRadians;
     }
 
+    /** Sets whether or not to run the PID controller */
     public void setRunPid(boolean runPID) {
         this.runPID = runPID;
     }
 
+    /** Sets the target of the PID (but doesn't run it) */
     public void setPidTarget(double targetRadians) {
         PIDTargetRadians = targetRadians;
     }
 
+    /** Gets whether or not the arm is within the tolerance of the PID's target.
+     * 
+     * @param toleranceRadians The tolerance in radians
+     */
     public boolean withinTolerance(double toleranceRadians) {
         return Math.abs(PIDTargetRadians - inputs.positionRadians) < toleranceRadians;
     }
@@ -69,13 +84,21 @@ public class ArmSubsystem extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
 
+        inputs.pidRunning = runPID;
+
         if (runPID) {
             setVoltage(pidController.calculate(inputs.positionRadians, PIDTargetRadians));
+
+            inputs.pidTargetRadians = PIDTargetRadians;
         }
 
         Logger.processInputs("Arm", inputs);
     }
 
+    /** Starts the PID controller with the desired target
+     * 
+     * @param goalRadians The PID's target in radians
+     */
     public Command startPid(double goalRadians) {
         return Commands.sequence(
             Commands.runOnce(() -> pidController.reset(inputs.positionRadians)),
@@ -84,6 +107,7 @@ public class ArmSubsystem extends SubsystemBase {
         );
     }
 
+    /** Stops the PID controller */
     public Command stopPID() {
         return runOnce(() -> setRunPid(false));
     }

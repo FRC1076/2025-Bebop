@@ -19,28 +19,33 @@ import java.util.Queue;
 
 /** IO implementation for NavX. */
 public class GyroIONavX implements GyroIO {
-  private final AHRS navX = new AHRS(NavXComType.kMXP_SPI, (byte) odometryFrequencyHz);
-  private final Queue<Double> yawPositionQueue;
-  private final Queue<Long> yawTimestampQueue;
+    private final AHRS navX = new AHRS(NavXComType.kMXP_SPI, (byte) odometryFrequencyHz);
+    private final Queue<Double> yawPositionQueue;
+    private final Queue<Long> yawTimestampQueue;
 
-  public GyroIONavX() {
-    yawTimestampQueue = OdometryThread.getInstance().makeTimestampQueue();
-    yawPositionQueue = OdometryThread.getInstance().registerSignal(navX::getAngle);
-  }
+    public GyroIONavX() {
+        yawTimestampQueue = OdometryThread.getInstance().makeTimestampQueue();
+        yawPositionQueue = OdometryThread.getInstance().registerSignal(navX::getAngle);
+    }
 
-  @Override
-  public void updateInputs(GyroIOInputs inputs) {
-    inputs.connected = navX.isConnected();
-    inputs.yawPosition = Rotation2d.fromDegrees(-navX.getAngle());
-    inputs.yawVelocityRadPerSec = Units.degreesToRadians(-navX.getRawGyroZ());
+    @Override
+    public void reset() {
+        navX.reset();
+    }
 
-    inputs.odometryYawTimestamps =
-        yawTimestampQueue.stream().mapToDouble((Long value) -> value).toArray();
-    inputs.odometryYawPositions =
-        yawPositionQueue.stream()
-            .map((Double value) -> Rotation2d.fromDegrees(-value))
-            .toArray(Rotation2d[]::new);
-    yawTimestampQueue.clear();
-    yawPositionQueue.clear();
-  }
+    @Override
+    public void updateInputs(GyroIOInputs inputs) {
+        inputs.connected = navX.isConnected();
+        inputs.yawPosition = Rotation2d.fromDegrees(-navX.getAngle());
+        inputs.yawVelocityRadPerSec = Units.degreesToRadians(-navX.getRawGyroZ());
+
+        inputs.odometryYawTimestamps =
+            yawTimestampQueue.stream().mapToDouble((Long value) -> value).toArray();
+        inputs.odometryYawPositions =
+            yawPositionQueue.stream()
+                .map((Double value) -> Rotation2d.fromDegrees(-value))
+                .toArray(Rotation2d[]::new);
+        yawTimestampQueue.clear();
+        yawPositionQueue.clear();
+    }
 }

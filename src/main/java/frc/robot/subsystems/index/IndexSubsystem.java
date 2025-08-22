@@ -18,14 +18,17 @@ public class IndexSubsystem extends SubsystemBase {
         this.io = io;
     }
 
+    /** Sets the voltage of the motor */
     public void setVoltage(double volts) {
         io.setVoltage(volts);
     }
 
+    /** Stops the motor from running (sets the voltage to zero) */
     public void stop() {
         io.setVoltage(0);
     }
 
+    /** Runs a voltage on the motor */
     public Command runVolts(double volts) {
         return Commands.run(
             () -> setVoltage(volts),

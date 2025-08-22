@@ -24,6 +24,7 @@ public interface ShooterIO {
         public boolean pidRunning = false;
     }
     
+    /** Set the desired voltages of the left and right motors */
     public abstract void setVoltage(double leftMotorVolts, double rightMotorVolts);
 
     public abstract void updateInputs(ShooterIOInputs inputs);

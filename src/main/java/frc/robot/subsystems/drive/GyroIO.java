@@ -26,4 +26,7 @@ public interface GyroIO {
     /** Updates inputs with regular data */
     public abstract void updateInputs(GyroIOInputs inputs);
 
+    /** Reset the current position of the gyro to forward */
+    public abstract void reset();
+
 }

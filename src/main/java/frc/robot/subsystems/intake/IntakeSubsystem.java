@@ -18,14 +18,17 @@ public class IntakeSubsystem extends SubsystemBase {
         this.io = io;
     }
 
+    /** Set the voltage of the motor */
     public void setVoltage(double volts) {
         io.setVoltage(volts);
     }
 
+    /** Stop the motor from running */
     public void stop() {
         io.setVoltage(0);
     }
 
+    /** Runs the motor at the desired voltage */
     public Command runVolts(double volts) {
         return Commands.run(
             () -> setVoltage(volts),

@@ -39,19 +39,26 @@ public class ShooterSubsystem extends SubsystemBase {
         );
     }
 
+    /** Set the voltage of the left motor and the right motor */
     public void setVoltage(double leftMotorVoltage, double rightMotorvoltage) {
         io.setVoltage(leftMotorVoltage, rightMotorvoltage);
     }
 
+    /** Set whether or not the PID is on
+     * 
+     * @param run Whether or not to run the PID
+    */
     public void setRunPID(boolean run) {
         runPid = run;
     }
 
+    /** Sets the target of the PID controller (but doesn't turn it on) */
     public void setPIDTarget(double leftMotorTargetRadPerSec, double rightMotorTargetRadPerSec) {
         leftPidTargetRadPerSec = leftMotorTargetRadPerSec;
         rightPidTargetRadPerSec = rightMotorTargetRadPerSec;
     }
     
+    /** Stop both motors */
     public void stop() {
         io.setVoltage(0, 0);
     }
@@ -72,6 +79,11 @@ public class ShooterSubsystem extends SubsystemBase {
         Logger.processInputs("Shooter", inputs);
     }
 
+    /** Starts the PID controllers with the desired targets
+     * 
+     * @param leftMotorTargetRadPerSec Target speed of the left motor in radians per second
+     * @param rightMotorTargetRadPerSec Target speed of the right motor in radians per second
+     */
     public Command startPid(double leftMotorTargetRadPerSec, double rightMotorTargetRadPerSec) {
         return Commands.sequence(
             Commands.runOnce(() -> setPIDTarget(leftMotorTargetRadPerSec, rightMotorTargetRadPerSec)), 
@@ -79,6 +91,7 @@ public class ShooterSubsystem extends SubsystemBase {
         );
     }
     
+    /** Stops the PID controllers */
     public Command stopPid() {
         return Commands.runOnce(() -> setRunPID(false));
     }

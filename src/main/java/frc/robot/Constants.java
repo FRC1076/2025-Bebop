@@ -81,7 +81,7 @@ public final class Constants {
 
         public static final int kCurrentLimitAmps = 40;
 
-        public static final double kVelocityConversionFactor = 2 * Math.PI; // TODO: Confirm
+        public static final double kVelocityConversionFactor = (2 * Math.PI) / 60.0; // Go from RPM to radians per second TODO: Confirm
         
         public static class Control {
             // TODO: Tune or get from Python code

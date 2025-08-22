@@ -15,6 +15,9 @@ public class DriveClosedLoopTeleop extends Command {
     private final DoubleSupplier xTransSpeedSupplier; // field-oriented x translational speed, scaled from -1.0 to 1.0
     private final DoubleSupplier yTransSpeedSupplier; // field-oriented y translational speed, scaled from -1.0 to 1.0
     private final DoubleSupplier omegaSupplier; // rotational speed, scaled from -1.0 to 1.0
+
+    private final DoubleSupplier translationClutchSupplier;
+    private final DoubleSupplier rotationClutchSupplier;
     
     public DriveClosedLoopTeleop(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier, DriveSubsystem subsystem) {
         this.xTransSpeedSupplier = xSupplier;
@@ -22,14 +25,36 @@ public class DriveClosedLoopTeleop extends Command {
         this.omegaSupplier = omegaSupplier;
         this.m_subsystem = subsystem;
 
+        this.translationClutchSupplier = () -> 1;
+        this.rotationClutchSupplier = () -> 1;
+
         addRequirements(subsystem);
+    }
+
+    public DriveClosedLoopTeleop(
+        DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier,
+        DoubleSupplier omegaSupplier,
+        DoubleSupplier translationClutchSupplier,
+        DoubleSupplier rotationClutchSupplier,
+        DriveSubsystem subsystem    
+    ) {
+        this.xTransSpeedSupplier = xSupplier;
+        this.yTransSpeedSupplier = ySupplier;
+        this.omegaSupplier = omegaSupplier;
+        this.m_subsystem = subsystem;
+
+        this.translationClutchSupplier = translationClutchSupplier;
+        this.rotationClutchSupplier = rotationClutchSupplier;
+
+        addRequirements(m_subsystem);
     }
 
     @Override
     public void execute() {
         ChassisSpeeds speeds = new ChassisSpeeds(
-            scaleSpeed(xTransSpeedSupplier.getAsDouble()) * DriveConstants.maxTranslationSpeedMPS,
-            scaleSpeed(yTransSpeedSupplier.getAsDouble()) * DriveConstants.maxTranslationSpeedMPS,
+            scaleSpeed(xTransSpeedSupplier.getAsDouble()) * DriveConstants.maxTranslationSpeedMPS * translationClutchSupplier.getAsDouble(),
+            scaleSpeed(yTransSpeedSupplier.getAsDouble()) * DriveConstants.maxTranslationSpeedMPS * rotationClutchSupplier.getAsDouble(),
             omegaSupplier.getAsDouble() * DriveConstants.maxTranslationSpeedMPS
         );
 
@@ -43,6 +68,7 @@ public class DriveClosedLoopTeleop extends Command {
         //m_subsystem.stop();
     }
 
+    /** Scale the speed to be between -1.0 and 1.0 */
     public double scaleSpeed(double speed){
         return speed / Math.max(Math.sqrt(Math.pow(xTransSpeedSupplier.getAsDouble(), 2) + Math.pow(yTransSpeedSupplier.getAsDouble(), 2)), 1);
     }

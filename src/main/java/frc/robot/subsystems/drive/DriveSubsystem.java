@@ -39,7 +39,7 @@ public class DriveSubsystem extends SubsystemBase {
         new SwerveModulePosition(),
         new SwerveModulePosition(),
         new SwerveModulePosition()
-    }; //For delta tracking
+    }; // For delta tracking
 
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
@@ -78,23 +78,28 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void resetPose(Pose2d newPose){
-        poseEstimator.resetPosition(rawGyroRotation,getModulePositions(),newPose);
+        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), newPose);
     }
 
     /** Chassis-oriented Closed-Loop driving */
     public void driveCLCO(ChassisSpeeds speeds){
         ChassisSpeeds discSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates,MaxModuleSpeed);
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, MaxModuleSpeed);
         for (int i = 0; i < 4; i++) {
             modules[i].setDesiredState(setpointStates[i]);
         }
-        Logger.recordOutput("SwerveStates/Setpoints",setpointStates);
+        Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
     }
 
     /** Field-oriented Closed-loop driving */
     public void driveCLFO(ChassisSpeeds speeds){
 
+    }
+
+    /** Reset the current yaw heading of the gyro to zero */
+    public void rezeroGyro() {
+        gyroIO.reset();
     }
 
     @Override

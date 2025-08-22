@@ -49,7 +49,7 @@ public class Module {
         );
     }
 
-    /*Sets desired state with overridden Feedforward */
+    /* Sets desired state with overridden Feedforward */
     public void setDesiredState(SwerveModuleState state, double driveFFVolts, double turnFFVolts){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
         state.optimize(inputs.turnPosition);

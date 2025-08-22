@@ -32,6 +32,7 @@ import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterIODisabled;
 import frc.robot.subsystems.shooter.ShooterIOHardware;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+
 import lib.hardware.BeamBreak;
 import lib.hardware.hid.SamuraiXboxController;
 
@@ -56,9 +57,15 @@ public class RobotContainer {
     private final IntakeSubsystem m_intake;
     private final ShooterSubsystem m_shooter;
 
+    // The beam break
     private final BeamBreak m_beamBreak;
 
+    // The Superstructure
     private final Superstructure m_superstructure;
+
+    // Clutches; must be between 0.1 and 1
+    private double translationalClutch = 1;
+    private double rotationalClutch = 1;
 
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final SamuraiXboxController m_driverController =
@@ -112,6 +119,8 @@ public class RobotContainer {
                 () -> m_driverController.getLeftY(),
                 () -> m_driverController.getLeftX(), 
                 () -> m_driverController.getRightX(),
+                () -> translationalClutch,
+                () -> rotationalClutch,
                 m_drive
             )
         );
@@ -169,6 +178,34 @@ public class RobotContainer {
         m_driverController.povRight()
             .whileTrue(superstructureCommands.forceForward())
             .onFalse(superstructureCommands.detectMechanismState());
+
+        // Single Clutch; doesn't run while double clutch is active
+        m_driverController.rightBumper()
+            .whileTrue(Commands.run(() -> {
+                translationalClutch = 0.6;
+                rotationalClutch = 0.6;
+            })).and(m_driverController.leftBumper()).negate()
+            .onFalse(Commands.runOnce(() -> {
+                translationalClutch = 1;
+                rotationalClutch = 1;
+            })).and(m_driverController.leftBumper()).negate();
+
+        // Double clutch
+        m_driverController.leftBumper()
+            .whileTrue(Commands.run(() -> {
+                translationalClutch = 0.35;
+                rotationalClutch = 0.35;
+            }))            
+            .onFalse(Commands.runOnce(() -> {
+                translationalClutch = 1;
+                rotationalClutch = 1;
+            })).and(m_driverController.rightBumper()).negate();
+
+        // Re-zero the gyro
+        m_driverController.start()
+            .onTrue(
+                Commands.runOnce(() -> m_drive.rezeroGyro())
+            );
     }
 
     /**

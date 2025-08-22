@@ -43,17 +43,21 @@ public class ArmIOHardware implements ArmIO {
         m_followMotorConfig
             .follow(m_leadMotor)
             .inverted(ArmConstants.kLeadMotorInverted != ArmConstants.kFollowMotorInverted)
-            .smartCurrentLimit(ArmConstants.kCurrentLimitAmps);
+            .smartCurrentLimit(ArmConstants.kCurrentLimitAmps)
+            .idleMode(IdleMode.kBrake);
 
         m_leadMotor.configure(m_leadMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
         m_relativeEncoder = m_leadMotor.getEncoder();
     }
 
+    /** Returns the position in radians, with adjustments to make sure that
+     *  zero is in the right place and that the value can't loop around the full circle
+     */
     private double getPositionRadians() {   
         return 
             (((m_encoder.get() * Math.PI * 2) // Raw value in radians
-             + ArmConstants.kAbsoluteEncoderShift) % (2 * Math.PI))  // Add the shift to make sure we don't look around to zero
+             + ArmConstants.kAbsoluteEncoderShift) % (2 * Math.PI))  // Add the shift to make sure we don't loop around to zero
              - ArmConstants.kAbsoluteEncoderZero; // Subtract the encoder zero to correct to the right value
     }
 

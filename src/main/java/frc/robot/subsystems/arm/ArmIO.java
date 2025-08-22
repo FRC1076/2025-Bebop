@@ -16,9 +16,12 @@ public interface ArmIO {
 
         public double positionRadians = 0;
         public double velocityRadiansPerSecond = 0;
+
+        public double pidTargetRadians = 0;
+        public boolean pidRunning = false;
     }
 
-
+    /** Set the voltage of the motor */
     public abstract void setVoltage(double volts);
 
     public abstract void updateInputs(ArmIOInputs inputs);
