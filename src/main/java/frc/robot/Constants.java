@@ -100,6 +100,11 @@ public final class Constants {
         public static final double maxTranslationSpeedMPS = 2;
         public static final double maxRotationSpeedRadPerSec = 2;
 
+        public static final double singleClutchTranslationFactor = 0.6;
+        public static final double singleClutchRotationFactor = 0.6;
+        public static final double doubleClutchTranslationFactor = 0.35;
+        public static final double doubleClutchRotationFactor = 0.35;
+
         public static final int odometryFrequencyHz = 100;
         public static final double wheelBase = Units.inchesToMeters(27.5);
         public static final double trackWidth = Units.inchesToMeters(27.5);

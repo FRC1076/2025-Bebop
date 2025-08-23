@@ -12,6 +12,9 @@ package frc.robot.subsystems.drive;
 import static frc.robot.Constants.DriveConstants.moduleTranslations;
 import static frc.robot.Constants.DriveConstants.ModuleConstants.Common.Drive.MaxModuleSpeed;
 
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,6 +25,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.commands.drive.TeleopDriveCommand;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -43,6 +47,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
+    public final DriveCommandFactory CommandBuilder;
+
     public DriveSubsystem(
         GyroIO gyroIO,
         ModuleIO FLModuleIO,
@@ -58,6 +64,8 @@ public class DriveSubsystem extends SubsystemBase {
         
 
         OdometryThread.getInstance().start();
+
+        CommandBuilder = new DriveCommandFactory(this);
     }
 
     public SwerveModuleState[] getModuleStates(){
@@ -94,7 +102,15 @@ public class DriveSubsystem extends SubsystemBase {
 
     /** Field-oriented Closed-loop driving */
     public void driveCLFO(ChassisSpeeds speeds){
-
+        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, rawGyroRotation);
+        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speeds, 0.02));
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates,MaxModuleSpeed);
+        for (int i = 0; i < 4; i++) {
+            modules[i].setDesiredState(setpointStates[i]);
+        }
+        SwerveModuleState[] actualStates = {modules[0].getState(), modules[1].getState(), modules[2].getState(), modules[3].getState()};
+        Logger.recordOutput("SwerveStates/Setpoints",setpointStates);
+        Logger.recordOutput("SwerveStates/Actual", actualStates);
     }
 
     /** Reset the current yaw heading of the gyro to zero */
@@ -156,5 +172,20 @@ public class DriveSubsystem extends SubsystemBase {
             states[i] = modules[i].getPosition();
         }
         return states;
+    }
+
+    /** Builds the drive commands */
+    public class DriveCommandFactory {
+        public DriveSubsystem drive;
+
+        private DriveCommandFactory(DriveSubsystem drive) {
+            this.drive = drive;
+        }
+
+        public TeleopDriveCommand driveTeleop(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier, double transClutchFactor, double rotClutchFactor, boolean useSpeedScaling) {
+            TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, xSupplier, ySupplier, omegaSupplier, useSpeedScaling);
+            driveCommand.setClutchFactors(transClutchFactor, rotClutchFactor);
+            return driveCommand;
+        }
     }
 }

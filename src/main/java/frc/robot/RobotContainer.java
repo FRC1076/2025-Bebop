@@ -13,7 +13,8 @@ import frc.robot.Constants.SystemConstants;
 import frc.robot.Constants.SystemConstants.RobotMode;
 import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
 import frc.robot.commands.Autos;
-import frc.robot.commands.DriveClosedLoopTeleop;
+import frc.robot.commands.drive.DriveClosedLoopTeleop;
+import frc.robot.commands.drive.TeleopDriveCommand;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.SuperstructureCommandFactory;
@@ -63,9 +64,8 @@ public class RobotContainer {
     // The Superstructure
     private final Superstructure m_superstructure;
 
-    // Clutches; must be between 0.1 and 1
-    private double translationalClutch = 1;
-    private double rotationalClutch = 1;
+    // Teleop drive command
+    private final TeleopDriveCommand driveCommand;
 
     // Replace with CommandPS4Controller or CommandJoystick if needed
     private final SamuraiXboxController m_driverController =
@@ -114,16 +114,14 @@ public class RobotContainer {
             m_beamBreak.beamBrokenSupplier()
         );
 
-        m_drive.setDefaultCommand(
-            new DriveClosedLoopTeleop(
-                () -> m_driverController.getLeftY(),
-                () -> m_driverController.getLeftX(), 
-                () -> m_driverController.getRightX(),
-                () -> translationalClutch,
-                () -> rotationalClutch,
-                m_drive
-            )
-        );
+        // TODO: check if driving is reversed
+        driveCommand = m_drive.CommandBuilder.driveTeleop(
+            () -> m_driverController.getLeftY(), 
+            () -> m_driverController.getLeftX(), 
+            () -> m_driverController.getRightX(),
+            1,
+            1,
+            false);
 
         // Configure bindings
         configureDriverBindings();
@@ -134,6 +132,17 @@ public class RobotContainer {
         final SuperstructureCommandFactory superstructureCommands = m_superstructure.getCommandbuilder();
         
         // TODO: check if all of these should be onTrue or whileTrue
+
+        // Default command is teleop drive
+        m_drive.setDefaultCommand(driveCommand);
+
+        // Apply double clutch
+        m_driverController.rightBumper()
+            .whileTrue(driveCommand.applyDoubleClutch());
+
+        // Apply single clutch
+        m_driverController.leftBumper()
+            .whileTrue(driveCommand.applySingleClutch());
 
         // Intake note
         m_driverController.leftTrigger()
@@ -178,28 +187,6 @@ public class RobotContainer {
         m_driverController.povRight()
             .whileTrue(superstructureCommands.forceForward())
             .onFalse(superstructureCommands.detectMechanismState());
-
-        // Single Clutch; doesn't run while double clutch is active
-        m_driverController.rightBumper()
-            .whileTrue(Commands.run(() -> {
-                translationalClutch = 0.6;
-                rotationalClutch = 0.6;
-            })).and(m_driverController.leftBumper()).negate()
-            .onFalse(Commands.runOnce(() -> {
-                translationalClutch = 1;
-                rotationalClutch = 1;
-            })).and(m_driverController.leftBumper()).negate();
-
-        // Double clutch
-        m_driverController.leftBumper()
-            .whileTrue(Commands.run(() -> {
-                translationalClutch = 0.35;
-                rotationalClutch = 0.35;
-            }))            
-            .onFalse(Commands.runOnce(() -> {
-                translationalClutch = 1;
-                rotationalClutch = 1;
-            })).and(m_driverController.rightBumper()).negate();
 
         // Re-zero the gyro
         m_driverController.start()
