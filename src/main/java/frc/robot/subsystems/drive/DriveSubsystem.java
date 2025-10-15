@@ -9,11 +9,11 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.DriveConstants.moduleTranslations;
 import static frc.robot.Constants.DriveConstants.ModuleConstants.Common.Drive.MaxModuleSpeed;
 
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,7 +24,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.drive.TeleopDriveCommand;
 
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -97,7 +99,10 @@ public class DriveSubsystem extends SubsystemBase {
         for (int i = 0; i < 4; i++) {
             modules[i].setDesiredState(setpointStates[i]);
         }
+
+        SwerveModuleState[] actualStates = {modules[0].getState(), modules[1].getState(), modules[2].getState(), modules[3].getState()};
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+        Logger.recordOutput("SwerveStates/Actual", actualStates);
     }
 
     /** Field-oriented Closed-loop driving */
@@ -108,6 +113,7 @@ public class DriveSubsystem extends SubsystemBase {
         for (int i = 0; i < 4; i++) {
             modules[i].setDesiredState(setpointStates[i]);
         }
+
         SwerveModuleState[] actualStates = {modules[0].getState(), modules[1].getState(), modules[2].getState(), modules[3].getState()};
         Logger.recordOutput("SwerveStates/Setpoints",setpointStates);
         Logger.recordOutput("SwerveStates/Actual", actualStates);
@@ -174,6 +180,24 @@ public class DriveSubsystem extends SubsystemBase {
         return states;
     }
 
+    /* EVERYTHING SYSID */
+    private void runTranslationCharacterization(double output) {
+        for (int i = 0; i < 4; i++) {
+            modules[i].runTranslationCharacterization(output);
+        }
+    }
+
+    private final SysIdRoutine m_SysIdRoutineTranslation = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,
+            Volts.of(4),
+            null,
+            state -> Logger.recordOutput("Drive/sysIdState", state.toString()) // Log state to AKit
+        ),
+        new SysIdRoutine.Mechanism(
+            output -> runTranslationCharacterization(output.in(Volts)), null, this)
+    );
+
     /** Builds the drive commands */
     public class DriveCommandFactory {
         public DriveSubsystem drive;
@@ -186,6 +210,14 @@ public class DriveSubsystem extends SubsystemBase {
             TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, xSupplier, ySupplier, omegaSupplier, useSpeedScaling);
             driveCommand.setClutchFactors(transClutchFactor, rotClutchFactor);
             return driveCommand;
+        }
+
+        public Command sysIdQuasistaticTranslation(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineTranslation.quasistatic(direction);
+        }
+
+        public Command sysIdDyanmicTranslation(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineTranslation.dynamic(direction);
         }
     }
 }
