@@ -61,11 +61,13 @@ public class Robot extends LoggedRobot {
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // Turn off signal logger TODO: Move to constant
-    SignalLogger.enableAutoLogging(false);
+    // Turn off signal logger
+    SignalLogger.enableAutoLogging(SystemConstants.enableSignalLogger);
 
     // This raises thread priority after a delay of 20 seconds
-    RobotContainer.threadCommand().schedule();
+    if (SystemConstants.increaseThreadPriority) {
+        RobotContainer.threadCommand().schedule();
+    }
 }
 
     /**

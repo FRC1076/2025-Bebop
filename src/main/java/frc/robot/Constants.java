@@ -19,6 +19,9 @@ public final class Constants {
 
     public static class SystemConstants {
         public static final RobotMode currentMode = RobotMode.REAL;
+
+        public static final boolean enableSignalLogger = false;
+        public static final boolean increaseThreadPriority = true;
         
         public static enum RobotMode {
             REAL,
