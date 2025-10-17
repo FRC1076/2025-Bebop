@@ -10,11 +10,19 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public static class OIConstants {
         public static final int kDriverControllerPort = 0;
+        public static final int kSecondaryControllerPort = 0;
 
         public static final double kControllerDeadband = 0.15;
         public static final double kControllerTriggerThreshold = 0.7;
 
         public static final int kBeamBreakPin = 5;
+
+        public static final SecondaryControllerStates secondaryControllerState = SecondaryControllerStates.DRIVETRAIN_SYSID_SPIN;
+
+        public static enum SecondaryControllerStates {
+            DRIVETRAIN_SYSID_TRANS,
+            DRIVETRAIN_SYSID_SPIN;
+        }
     }
 
     public static class SystemConstants {

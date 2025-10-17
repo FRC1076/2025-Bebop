@@ -66,7 +66,13 @@ public class Module {
     /** Runs module with specified output while controlling to zero degrees */
     public void runTranslationCharacterization(double output) {
         io.setDriveVolts(output);
-        io.setTurnPosition(0, 0.3);
+        io.setTurnPosition(0, 0.1);
+    }
+
+    /** Runs module with specified output while controlling no translation movement */
+    public void runSpinCharacterization(double output) {
+        io.setDriveVolts(0);
+        io.setTurnVolts(output);
     }
 
     public void stop(){

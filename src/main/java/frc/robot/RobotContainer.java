@@ -12,8 +12,8 @@ import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.SystemConstants;
 import frc.robot.Constants.SystemConstants.RobotMode;
 import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
+import frc.robot.Constants.OIConstants.SecondaryControllerStates;
 import frc.robot.commands.Autos;
-import frc.robot.commands.drive.DriveClosedLoopTeleop;
 import frc.robot.commands.drive.TeleopDriveCommand;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Superstructure;
@@ -24,6 +24,7 @@ import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.GyroIOPigeon;
 import frc.robot.subsystems.drive.ModuleIOHardware;
+import frc.robot.subsystems.drive.DriveSubsystem.DriveCommandFactory;
 import frc.robot.subsystems.index.IndexIODisabled;
 import frc.robot.subsystems.index.IndexIOHardware;
 import frc.robot.subsystems.index.IndexSubsystem;
@@ -41,6 +42,7 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 
 /**
@@ -67,9 +69,14 @@ public class RobotContainer {
     // Teleop drive command
     private final TeleopDriveCommand driveCommand;
 
-    // Replace with CommandPS4Controller or CommandJoystick if needed
+    // Controllers
     private final SamuraiXboxController m_driverController =
         new SamuraiXboxController(OIConstants.kDriverControllerPort)
+        .withDeadband(OIConstants.kControllerDeadband)
+        .withTriggerThreshold(OIConstants.kControllerTriggerThreshold);
+
+    private final SamuraiXboxController m_secondaryController = 
+        new SamuraiXboxController(OIConstants.kSecondaryControllerPort)
         .withDeadband(OIConstants.kControllerDeadband)
         .withTriggerThreshold(OIConstants.kControllerTriggerThreshold);
 
@@ -125,6 +132,9 @@ public class RobotContainer {
 
         // Configure bindings
         configureDriverBindings();
+
+        // Configure secondary controller bindings
+
     }
 
     /** Bind Triggers from the DriverController to Superstructure Commands. */
@@ -193,6 +203,18 @@ public class RobotContainer {
             .onTrue(
                 Commands.runOnce(() -> m_drive.rezeroGyro())
             );
+    }
+
+    private void configureSecondaryControllerBindings(SecondaryControllerStates state) {
+        DriveCommandFactory driveCommandBuilder = m_drive.getCommandBuilder();
+
+        if (state == SecondaryControllerStates.DRIVETRAIN_SYSID_TRANS) {
+            m_secondaryController.a()
+                .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicTranslation(Direction.kForward));
+
+            
+        }
     }
 
     /**

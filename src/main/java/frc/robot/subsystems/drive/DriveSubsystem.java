@@ -187,16 +187,39 @@ public class DriveSubsystem extends SubsystemBase {
         }
     }
 
+    private void runSpinCharacterization(double output) {
+        for (int i = 0; i < 4; i++) {
+            modules[i].runTranslationCharacterization(output);
+        }
+    }
+
+    /** Translation SysID */
     private final SysIdRoutine m_SysIdRoutineTranslation = new SysIdRoutine(
         new SysIdRoutine.Config(
             null,
             Volts.of(4),
             null,
-            state -> Logger.recordOutput("Drive/sysIdState", state.toString()) // Log state to AKit
+            state -> Logger.recordOutput("Drive/sysIdStateTranslation", state.toString()) // Log state to AKit
         ),
         new SysIdRoutine.Mechanism(
             output -> runTranslationCharacterization(output.in(Volts)), null, this)
     );
+
+    /** Rotation SysID (spins motors only) */
+    private final SysIdRoutine m_SysIdRoutineSpin = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,
+            Volts.of(4),
+            null,
+            state -> Logger.recordOutput("Drive/sysIdStateSpin", state.toString()) // Log state to AKit
+        ),
+        new SysIdRoutine.Mechanism(
+            output -> runSpinCharacterization(output.in(Volts)), null, this)
+    );
+
+    public DriveCommandFactory getCommandBuilder() {
+        return CommandBuilder;
+    }
 
     /** Builds the drive commands */
     public class DriveCommandFactory {
@@ -218,6 +241,14 @@ public class DriveSubsystem extends SubsystemBase {
 
         public Command sysIdDyanmicTranslation(SysIdRoutine.Direction direction) {
             return m_SysIdRoutineTranslation.dynamic(direction);
+        }
+
+        public Command sysIdQuasistaticSpin(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineSpin.quasistatic(direction);
+        }
+
+        public Command sysIdDyanmicSpin(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineSpin.dynamic(direction);
         }
     }
 }
