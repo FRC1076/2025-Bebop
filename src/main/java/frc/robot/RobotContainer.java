@@ -134,7 +134,7 @@ public class RobotContainer {
         configureDriverBindings();
 
         // Configure secondary controller bindings
-
+        configureSecondaryControllerBindings(OIConstants.secondaryControllerState);
     }
 
     /** Bind Triggers from the DriverController to Superstructure Commands. */
@@ -211,9 +211,35 @@ public class RobotContainer {
         if (state == SecondaryControllerStates.DRIVETRAIN_SYSID_TRANS) {
             m_secondaryController.a()
                 .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticTranslation(Direction.kForward));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticTranslation(Direction.kReverse));
+
+            m_secondaryController.b()
+                .and(m_secondaryController.x())
                 .whileTrue(driveCommandBuilder.sysIdDyanmicTranslation(Direction.kForward));
 
-            
+            m_secondaryController.b()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicTranslation(Direction.kReverse));
+        } else if (state == SecondaryControllerStates.DRIVETRAIN_SYSID_SPIN) {
+            m_secondaryController.a()
+                .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticSpin(Direction.kForward));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticSpin(Direction.kReverse));
+
+            m_secondaryController.b()
+                .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicSpin(Direction.kForward));
+
+            m_secondaryController.b()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicSpin(Direction.kReverse));
         }
     }
 

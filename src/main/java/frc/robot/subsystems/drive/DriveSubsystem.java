@@ -189,7 +189,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     private void runSpinCharacterization(double output) {
         for (int i = 0; i < 4; i++) {
-            modules[i].runTranslationCharacterization(output);
+            modules[i].runSpinCharacterization(output);
         }
     }
 

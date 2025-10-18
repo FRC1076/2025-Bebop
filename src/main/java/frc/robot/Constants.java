@@ -10,7 +10,7 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public static class OIConstants {
         public static final int kDriverControllerPort = 0;
-        public static final int kSecondaryControllerPort = 0;
+        public static final int kSecondaryControllerPort = 1;
 
         public static final double kControllerDeadband = 0.15;
         public static final double kControllerTriggerThreshold = 0.7;
@@ -145,14 +145,14 @@ public final class Constants {
                     public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Units: Meters per second
 
                     // PID constants
-                    public static final double kP = 0.035;
+                    public static final double kP = 28.659 / 7;
                     public static final double kI = 0.000;
-                    public static final double kD = 0.0012;
+                    public static final double kD = 2.5553 / 7;
 
                     // Feedforward constants
-                    public static final double kV = 2.78;
-                    public static final double kS = 0.0;
-                    public static final double kA = 0.0;
+                    public static final double kV = 1.2574;
+                    public static final double kS = 0.12683;
+                    public static final double kA = 0.1767;
                 }
     
                 public static class Turn {
@@ -163,17 +163,17 @@ public final class Constants {
                     public static final double VelocityConversionFactor = PositionConversionFactor; // Units: Radians Per Second
 
                     // PID constants
-                    public static double kP = 0.75;
+                    public static final double kP = 2;
                     public static final double kI = 0.0;
                     public static final double kD = 0.0001;
                 }
             }
             public static enum ModuleConfig {
     
-                FrontLeft(1,11,21,-0.441162109375 +0.5),
-                FrontRight(2,12,22,-0.3984375 +0.5),
-                RearRight(3,13,23,-0.525146484375 ),
-                RearLeft(4,14,24,-0.931396484375);
+                FrontLeft(1,11,21,0.163818359375),
+                FrontRight(2,12,22,0.1982421875),
+                RearRight(3,13,23,-0.345703125),
+                RearLeft(4,14,24,-0.259033203125);
     
                 public final int DrivePort;
                 public final int TurnPort;
