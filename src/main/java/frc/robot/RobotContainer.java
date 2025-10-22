@@ -8,6 +8,7 @@
 
 package frc.robot;
 
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.SystemConstants;
 import frc.robot.Constants.SystemConstants.RobotMode;
@@ -243,7 +244,23 @@ public class RobotContainer {
                 .whileTrue(driveCommandBuilder.sysIdDyanmicSpin(Direction.kReverse));
         } else if (state == SecondaryControllerStates.ARM) {
             new Trigger(() -> Math.abs(m_secondaryController.getLeftY()) > 0.01)
-                .whileTrue(m_arm.runVolts(m_secondaryController.getLeftY()));
+                .whileTrue(m_arm.runVolts(m_secondaryController.getLeftY() * ArmConstants.kMaxManualControlVolts));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.x())
+                .whileTrue(m_arm.armSysIdQuasistatic(Direction.kForward));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.y())
+                .whileTrue(m_arm.armSysIdQuasistatic(Direction.kReverse));
+            
+            m_secondaryController.b()
+                .and(m_secondaryController.x())
+                .whileTrue(m_arm.armSysIdDynamic(Direction.kForward));
+            
+            m_secondaryController.b()
+                .and(m_secondaryController.y())
+                .whileTrue(m_arm.armSysIdDynamic(Direction.kReverse));
         }
     }
 

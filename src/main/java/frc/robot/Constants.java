@@ -63,6 +63,8 @@ public final class Constants {
 
         public static final double kToleranceRadians = 0.1; // TODO: Confirm
 
+        public static final double kMaxManualControlVolts = 4;
+
         public static class Control {
             // *** TO BE DETERMINED FROM PYTHON CODE OR PHYSICAL TUNING ***
             public static final double kP = 0;
