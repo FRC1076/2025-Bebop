@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 
@@ -240,6 +241,9 @@ public class RobotContainer {
             m_secondaryController.b()
                 .and(m_secondaryController.y())
                 .whileTrue(driveCommandBuilder.sysIdDyanmicSpin(Direction.kReverse));
+        } else if (state == SecondaryControllerStates.ARM) {
+            new Trigger(() -> Math.abs(m_secondaryController.getLeftY()) > 0.01)
+                .whileTrue(m_arm.runVolts(m_secondaryController.getLeftY()));
         }
     }
 

@@ -21,7 +21,8 @@ public final class Constants {
 
         public static enum SecondaryControllerStates {
             DRIVETRAIN_SYSID_TRANS,
-            DRIVETRAIN_SYSID_SPIN;
+            DRIVETRAIN_SYSID_SPIN,
+            ARM;
         }
     }
 

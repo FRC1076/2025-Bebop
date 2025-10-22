@@ -111,4 +111,12 @@ public class ArmSubsystem extends SubsystemBase {
     public Command stopPID() {
         return runOnce(() -> setRunPid(false));
     }
+
+    /** Runs volts directly */
+    public Command runVolts(double volts) {
+        return Commands.runOnce(() -> setVoltage(volts));
+    }
+
+    /** ALL THINGS SYSID */
+    
 }
