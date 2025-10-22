@@ -138,34 +138,38 @@ public final class Constants {
                     public static final int CurrentLimit = 60;
                     public static final double gearRatio = 6.75;
                     public static final double VoltageCompensation = 12;
-                    public static final double MaxModuleSpeed = 14.0; // Maximum attainable module speed
-                    public static final double WheelRadius = Units.inchesToMeters(4); // Meters
+                    public static final double MaxModuleSpeed = Units.feetToMeters(15.1); // Maximum attainable module speed, from the SDS website
+                    public static final double WheelDiameter = Units.inchesToMeters(4); // Standard SDS wheel
                     public static final double WheelCOF = 1.0; // Coefficient of friction
-                    public static final double PositionConversionFactor = 2 * WheelRadius * Math.PI / gearRatio; // Units: Meters
-                    public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Units: Meters per second
+                    public static final double PositionConversionFactor = WheelDiameter * Math.PI / gearRatio; // Converts from rotations to meters, calculates to be 0.04729
+                    public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Converts from RPM to meters per second, calculates to be 0.0007881
 
                     // PID constants
-                    public static final double kP = 28.659 / 7;
+                    public static final double kP = 0.035;
                     public static final double kI = 0.000;
-                    public static final double kD = 2.5553 / 7;
+                    public static final double kD = 0.0012;
 
                     // Feedforward constants
-                    public static final double kV = 1.2574;
-                    public static final double kS = 0.12683;
-                    public static final double kA = 0.1767;
+                    public static final double kV = 2.78;
+                    public static final double kS = 0.0;
+                    public static final double kA = 0.0;
                 }
     
                 public static class Turn {
                     public static final int CurrentLimit = 60;
                     public static final double VoltageCompensation = 12;
                     public static final double gearRatio = 12.8;
-                    public static final double PositionConversionFactor = (1 / gearRatio) * 2 * Math.PI; // Units: Radians TODO: check that radians don't break anything
-                    public static final double VelocityConversionFactor = PositionConversionFactor; // Units: Radians Per Second
+                    // TODO: check that radians for conversion factors don't break anything
+                    public static final double PositionConversionFactor = (1 / gearRatio) * 2 * Math.PI; // Converts from rotations to radians, calculates out to be 0.4909
+                    public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Converts from RPM to radians/second
 
                     // PID constants
                     public static final double kP = 2;
                     public static final double kI = 0.0;
                     public static final double kD = 0.0001;
+
+                    // Feedforward constant
+                    public static final double kS = 0; // May be better just to leave this as zero
                 }
             }
             public static enum ModuleConfig {

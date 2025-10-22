@@ -151,7 +151,7 @@ public class ModuleIOHardware implements ModuleIO {
         inputs.driveCurrentAmps = m_driveMotor.getOutputCurrent();
         
         inputs.turnAbsolutePosition = new Rotation2d(turnAbsolutePosition.refresh().getValue());
-        inputs.turnPosition = Rotation2d.fromRotations(TurnRelEncoder.getPosition());
+        inputs.turnPosition = Rotation2d.fromRadians(TurnRelEncoder.getPosition());
         inputs.turnVelocityRPM = TurnRelEncoder.getVelocity();
         inputs.turnAppliedVolts = m_turnMotor.getBusVoltage() * m_turnMotor.getAppliedOutput();
         inputs.driveCurrentAmps = m_turnMotor.getOutputCurrent();
@@ -163,7 +163,7 @@ public class ModuleIOHardware implements ModuleIO {
         OdometryThread.safeDrain(turnPositionQueue, turnPositionBuffer, samples);
         inputs.odometryTimestamps = timestampBuffer.stream().mapToDouble((Long value) -> value/1e6).toArray();
         inputs.odometryDrivePositionsMeters = drivePositionBuffer.stream().mapToDouble((Double value) -> value).toArray();
-        inputs.odometryTurnPositions = turnPositionBuffer.stream().map((Double value) -> Rotation2d.fromRotations(value)).toArray(Rotation2d[]::new);
+        inputs.odometryTurnPositions = turnPositionBuffer.stream().map((Double value) -> Rotation2d.fromRadians(value)).toArray(Rotation2d[]::new);
         timestampBuffer.clear();
         drivePositionBuffer.clear();
         turnPositionBuffer.clear();

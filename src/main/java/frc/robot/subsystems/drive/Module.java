@@ -10,6 +10,7 @@
 package frc.robot.subsystems.drive;
 
 import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Drive;
+import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Turn;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -27,6 +28,7 @@ public class Module {
     public Module(ModuleIO io, String ID){
         this.io = io;
         this.ID = ID;
+
         driveFFController = new SimpleMotorFeedforward(
             Drive.kS,
             Drive.kV,
@@ -35,7 +37,7 @@ public class Module {
         );
     }
 
-    /*Sets desired state in closed-loop mode */
+    /* Sets desired state in closed-loop mode */
     public void setDesiredState(SwerveModuleState state){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
         state.optimize(inputs.turnPosition);
@@ -44,12 +46,12 @@ public class Module {
             driveFFController.calculate(state.speedMetersPerSecond)
         );
         io.setTurnPosition(
-            state.angle.getRotations(), 
-            0
+            state.angle.getRadians(), 
+            Turn.kS
         );
     }
 
-    /* Sets desired state with overridden Feedforward */
+    /* Sets desired state in closed-loop mode with overridden Feedforward */
     public void setDesiredState(SwerveModuleState state, double driveFFVolts, double turnFFVolts){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
         state.optimize(inputs.turnPosition);
@@ -58,7 +60,7 @@ public class Module {
             driveFFVolts
         );
         io.setTurnPosition(
-            state.angle.getRotations(), 
+            state.angle.getRadians(), 
             turnFFVolts
         );
     }
@@ -66,7 +68,7 @@ public class Module {
     /** Runs module with specified output while controlling to zero degrees */
     public void runTranslationCharacterization(double output) {
         io.setDriveVolts(output);
-        io.setTurnPosition(0, 0.1);
+        io.setTurnPosition(0, Turn.kS);
     }
 
     /** Runs module with specified output while controlling no translation movement */
