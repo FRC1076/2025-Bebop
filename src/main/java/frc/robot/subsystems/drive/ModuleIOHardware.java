@@ -12,6 +12,7 @@ package frc.robot.subsystems.drive;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
 import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Drive;
 import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Turn;
@@ -61,11 +62,11 @@ public class ModuleIOHardware implements ModuleIO {
     public ModuleIOHardware(ModuleConfig config){
 
         m_turnMotor = new SparkMax(config.TurnPort, MotorType.kBrushless);
-        TurnPID = m_turnMotor.getClosedLoopController();
+        // TurnPID = m_turnMotor.getClosedLoopController();
         TurnRelEncoder = m_turnMotor.getEncoder();
 
         m_driveMotor = new SparkMax(config.DrivePort, MotorType.kBrushless);
-        DrivePID = m_driveMotor.getClosedLoopController();
+        // DrivePID = m_driveMotor.getClosedLoopController();
         DriveRelEncoder = m_driveMotor.getEncoder();
     
         m_turnEncoder = new CANcoder(config.EncoderPort);
@@ -106,7 +107,8 @@ public class ModuleIOHardware implements ModuleIO {
             .outputCurrentPeriodMs(20);
         
         m_turnMotor.configure(turnConfig,ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);
-        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble());
+        TurnPID = m_turnMotor.getClosedLoopController();
+        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
         SparkMaxConfig driveConfig = new SparkMaxConfig();
         driveConfig
             .idleMode(IdleMode.kBrake)
@@ -133,6 +135,7 @@ public class ModuleIOHardware implements ModuleIO {
             .outputCurrentPeriodMs(20);
         
         m_driveMotor.configure(driveConfig,ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);
+        DrivePID = m_driveMotor.getClosedLoopController();
         DriveRelEncoder.setPosition(0.0);
         
         timestampQueue = OdometryThread.getInstance().makeTimestampQueue();
@@ -151,8 +154,9 @@ public class ModuleIOHardware implements ModuleIO {
         inputs.driveCurrentAmps = m_driveMotor.getOutputCurrent();
         
         inputs.turnAbsolutePosition = new Rotation2d(turnAbsolutePosition.refresh().getValue());
+        inputs.turnAbsolutePositionRadians = inputs.turnAbsolutePosition.getRadians();
         inputs.turnPosition = Rotation2d.fromRadians(TurnRelEncoder.getPosition());
-        inputs.turnVelocityRPM = TurnRelEncoder.getVelocity();
+        inputs.turnVelocityRadiansPerSecond = TurnRelEncoder.getVelocity();
         inputs.turnAppliedVolts = m_turnMotor.getBusVoltage() * m_turnMotor.getAppliedOutput();
         inputs.driveCurrentAmps = m_turnMotor.getOutputCurrent();
 
@@ -191,6 +195,8 @@ public class ModuleIOHardware implements ModuleIO {
 
     @Override
     public void setTurnPosition(double positionRots, double FFVolts){
+        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
+
         TurnPID.setReference(
             positionRots,
             ControlType.kPosition,

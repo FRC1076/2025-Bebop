@@ -17,7 +17,7 @@ public final class Constants {
 
         public static final int kBeamBreakPin = 5;
 
-        public static final SecondaryControllerStates secondaryControllerState = SecondaryControllerStates.DRIVETRAIN_SYSID_SPIN;
+        public static final SecondaryControllerStates secondaryControllerState = SecondaryControllerStates.DRIVETRAIN_SYSID_TRANS;
 
         public static enum SecondaryControllerStates {
             DRIVETRAIN_SYSID_TRANS,
@@ -167,12 +167,12 @@ public final class Constants {
                     public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Converts from RPM to radians/second
 
                     // PID constants
-                    public static final double kP = 2;
+                    public static final double kP = 0.5;
                     public static final double kI = 0.0;
-                    public static final double kD = 0.0001;
+                    public static final double kD = 2;
 
                     // Feedforward constant
-                    public static final double kS = 0; // May be better just to leave this as zero
+                    public static final double kS = 0.12009; // May be better just to leave this as zero
                 }
             }
             public static enum ModuleConfig {
