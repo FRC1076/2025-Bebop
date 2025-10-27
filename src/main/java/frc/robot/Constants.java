@@ -231,32 +231,32 @@ public final class Constants {
                 0, 
                 0, 
                 -0.4014257, 
-                -471, 
-                576),
+                -368, 
+                450),
 
             /** Pre-shooting state, angle just between subwoofer and mid-high */
             MID_LOW(
                 0, 
                 0, 
                 0, 
-                -400, 
-                489),
+                -327, 
+                400),
 
             /** Pre-shooting state, angle between mid-low and amp */
             MID_HIGH(
                 0, 
                 0, 
                 0.5, 
-                -350, 
-                428),
+                -286, 
+                350),
             
             /** Pre-shooting state for when at the amp, highest shooting state */
             AMP(
                 0, 
                 0, 
                 1.3, 
-                -250, 
-                280),
+                -220, 
+                250),
             
             /** Shoot into the subwoofer */
             SHOOT_SUBWOOFER(
