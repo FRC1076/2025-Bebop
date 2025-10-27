@@ -40,5 +40,5 @@ public interface ModuleIO {
 
     public default void setDriveVelocity(double velocityMetersPerSec, double FFVolts) {}
 
-    public default void setTurnPosition(double positionRots, double FFVolts) {}
+    public default void setTurnPosition(double positionRadians, double FFVolts) {}
 }

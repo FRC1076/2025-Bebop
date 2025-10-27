@@ -12,7 +12,6 @@ package frc.robot.subsystems.drive;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
 import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Drive;
 import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Turn;
@@ -95,7 +94,7 @@ public class ModuleIOHardware implements ModuleIO {
             .i(Turn.kI)
             .d(Turn.kD)
             .positionWrappingEnabled(true)
-            .positionWrappingInputRange(0,1);
+            .positionWrappingInputRange(0, 2*Math.PI);
         turnConfig
             .signals
             .primaryEncoderPositionAlwaysOn(true)
@@ -106,9 +105,10 @@ public class ModuleIOHardware implements ModuleIO {
             .busVoltagePeriodMs(20)
             .outputCurrentPeriodMs(20);
         
-        m_turnMotor.configure(turnConfig,ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);
+        m_turnMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         TurnPID = m_turnMotor.getClosedLoopController();
         TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
+        
         SparkMaxConfig driveConfig = new SparkMaxConfig();
         driveConfig
             .idleMode(IdleMode.kBrake)
@@ -194,11 +194,12 @@ public class ModuleIOHardware implements ModuleIO {
     }
 
     @Override
-    public void setTurnPosition(double positionRots, double FFVolts){
-        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
+    public void setTurnPosition(double positionRadians, double FFVolts){
+        // TODO: check if the line below (commented out) causes problems
+        // TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
 
         TurnPID.setReference(
-            positionRots,
+            positionRadians,
             ControlType.kPosition,
             ClosedLoopSlot.kSlot0,
             FFVolts,
