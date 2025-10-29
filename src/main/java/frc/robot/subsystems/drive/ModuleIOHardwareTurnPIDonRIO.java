@@ -156,10 +156,12 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
 
     @Override
     public void periodic() {
+        turnAbsolutePosition.refresh();
+
         if (turnPIDEnabled) {
             setTurnVoltsKeepPIDOn(
                 TurnPID.calculate(
-                    turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor,
+                    MathUtil.angleModulus(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor),
                     turnPIDTarget
                 ) + turnFFVolts
             );
@@ -175,7 +177,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
         inputs.driveCurrentAmps = m_driveMotor.getOutputCurrent();
         
         inputs.turnAbsolutePositionRadians = turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor;
-        inputs.turnPosition = inputs.turnAbsolutePositionRadians;
+        inputs.turnPosition = turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor;
         inputs.turnVelocityRadiansPerSecond = TurnRelEncoder.getVelocity();
         inputs.turnAppliedVolts = m_turnMotor.getBusVoltage() * m_turnMotor.getAppliedOutput();
         inputs.turnCurrentAmps = m_turnMotor.getOutputCurrent();
@@ -222,6 +224,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
     public void setTurnPosition(double positionRadians, double FFVolts){
         turnPIDTarget = MathUtil.angleModulus(positionRadians);
         turnFFVolts = FFVolts;
+        turnPIDEnabled = true;
     }
     
 }

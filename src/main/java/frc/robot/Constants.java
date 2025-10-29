@@ -167,7 +167,7 @@ public final class Constants {
                     public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Converts from RPM to radians/second
 
                     // PID constants
-                    public static final double kP = 2;
+                    public static final double kP = 0.5;
                     public static final double kI = 0.0;
                     public static final double kD = 0.0001;
 
@@ -176,10 +176,10 @@ public final class Constants {
                 }
             }
             public static enum ModuleConfig {
-                FrontLeft(1,11,21,0.163818359375),
-                FrontRight(2,12,22,0.1982421875),
-                RearRight(3,13,23,-0.345703125),
-                RearLeft(4,14,24,-0.259033203125);
+                FrontLeft(1,11,21,-0.342041015625),
+                FrontRight(2,12,22,0.193603515625),
+                RearRight(3,13,23,-0.35498046875),
+                RearLeft(4,14,24,-0.264892578125);
     
                 public final int DrivePort;
                 public final int TurnPort;

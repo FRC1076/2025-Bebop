@@ -25,6 +25,7 @@ import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.GyroIOPigeon;
 import frc.robot.subsystems.drive.ModuleIOHardware;
+import frc.robot.subsystems.drive.ModuleIOHardwareTurnPIDonRIO;
 import frc.robot.subsystems.drive.DriveSubsystem.DriveCommandFactory;
 import frc.robot.subsystems.index.IndexIODisabled;
 import frc.robot.subsystems.index.IndexIOHardware;

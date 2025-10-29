@@ -147,6 +147,11 @@ public class ModuleIOHardware implements ModuleIO {
     }
 
     @Override
+    public void periodic() {
+        turnAbsolutePosition.refresh();
+    }
+
+    @Override
     public void updateInputs(ModuleIOInputs inputs){
 
         inputs.drivePositionMeters = DriveRelEncoder.getPosition();
