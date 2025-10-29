@@ -34,6 +34,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
@@ -83,7 +84,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
         //Config turn absolute encoder here
         CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
         encoderConfig.FutureProofConfigs = false;
-        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1.0;
+        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5; // Originally 1
         encoderConfig.MagnetSensor.MagnetOffset = config.EncoderOffsetRots;
         m_turnEncoder.getConfigurator().apply(encoderConfig);
         turnAbsolutePosition = m_turnEncoder.getAbsolutePosition();
@@ -104,7 +105,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
             .i(Turn.kI)
             .d(Turn.kD)
             .positionWrappingEnabled(true)
-            .positionWrappingInputRange(0, 2*Math.PI);
+            .positionWrappingInputRange(-Math.PI, Math.PI); // Originally: 0, 2*Math.PI 
         turnConfig
             .signals
             .primaryEncoderPositionAlwaysOn(true)
@@ -219,7 +220,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
 
     @Override
     public void setTurnPosition(double positionRadians, double FFVolts){
-        turnPIDTarget = positionRadians;
+        turnPIDTarget = MathUtil.angleModulus(positionRadians);
         turnFFVolts = FFVolts;
     }
     
