@@ -158,7 +158,7 @@ public class ModuleIOHardware implements ModuleIO {
         inputs.turnPosition = Rotation2d.fromRadians(TurnRelEncoder.getPosition());
         inputs.turnVelocityRadiansPerSecond = TurnRelEncoder.getVelocity();
         inputs.turnAppliedVolts = m_turnMotor.getBusVoltage() * m_turnMotor.getAppliedOutput();
-        inputs.driveCurrentAmps = m_turnMotor.getOutputCurrent();
+        inputs.turnCurrentAmps = m_turnMotor.getOutputCurrent();
 
         /** Should be called after poll() in the main thread */
         int samples = OdometryThread.getInstance().sampleCount;
