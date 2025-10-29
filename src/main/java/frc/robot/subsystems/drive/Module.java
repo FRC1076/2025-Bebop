@@ -101,6 +101,7 @@ public class Module {
 
     /** Must be manually called by DriveSubsystem. WARNING: NOT THREAD-SAFE, SHOULD ONLY BE CALLED FROM MAIN THREAD */
     public void periodic(){
+        io.periodic();
         io.updateInputs(inputs);
         Logger.processInputs("Drive/" + ID, inputs);
         int sampleCount = OdometryThread.getInstance().sampleCount;

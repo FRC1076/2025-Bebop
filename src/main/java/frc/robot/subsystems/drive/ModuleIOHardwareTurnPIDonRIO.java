@@ -154,8 +154,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
     }
 
     @Override
-    public void updateInputs(ModuleIOInputs inputs){
-        // This is called every loop (hypothetially), so basically using this is periodic()
+    public void periodic() {
         if (turnPIDEnabled) {
             setTurnVoltsKeepPIDOn(
                 TurnPID.calculate(
@@ -164,7 +163,10 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
                 ) + turnFFVolts
             );
         }
+    }
 
+    @Override
+    public void updateInputs(ModuleIOInputs inputs){
 
         inputs.drivePositionMeters = DriveRelEncoder.getPosition();
         inputs.driveVelocityMetersPerSec = DriveRelEncoder.getVelocity();

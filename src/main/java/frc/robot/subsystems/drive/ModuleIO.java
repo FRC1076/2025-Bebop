@@ -34,6 +34,9 @@ public interface ModuleIO {
 
     public abstract void updateInputs(ModuleIOInputs inputs);
 
+    /** Anything that the IO layer needs to be run every loop */
+    public default void periodic() {}
+
     public default void setDriveVolts(double volts) {}
 
     public default void setTurnVolts(double volts) {}
