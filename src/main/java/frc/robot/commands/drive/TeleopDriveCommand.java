@@ -44,7 +44,7 @@ public class TeleopDriveCommand extends Command {
         DoubleSupplier omegaSupplier,
         boolean useSpeedScaling
     ) {
-        if(useSpeedScaling) {
+        if (useSpeedScaling) {
             this.rawXSupplier = () -> scaleSpeed(xSupplier.getAsDouble(), xSupplier, ySupplier) * DriveConstants.maxTranslationSpeedMPS;
             this.rawYSupplier = () -> scaleSpeed(ySupplier.getAsDouble(), xSupplier, ySupplier) * DriveConstants.maxTranslationSpeedMPS;
         } else {

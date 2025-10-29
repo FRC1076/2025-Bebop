@@ -112,7 +112,7 @@ public final class Constants {
     // TODO: check all the constants in this class
     public static class DriveConstants {
         public static final double maxTranslationSpeedMPS = 2;
-        public static final double maxRotationSpeedRadPerSec = 2;
+        public static final double maxRotationSpeedRadPerSec = 4; // originally set to 2 // Maximum acceptable value appears to be 12
 
         public static final double singleClutchTranslationFactor = 0.6;
         public static final double singleClutchRotationFactor = 0.6;
@@ -176,7 +176,6 @@ public final class Constants {
                 }
             }
             public static enum ModuleConfig {
-    
                 FrontLeft(1,11,21,0.163818359375),
                 FrontRight(2,12,22,0.1982421875),
                 RearRight(3,13,23,-0.345703125),
