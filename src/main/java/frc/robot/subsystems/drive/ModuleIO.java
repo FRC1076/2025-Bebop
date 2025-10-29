@@ -20,9 +20,9 @@ public interface ModuleIO {
         public double driveAppliedVolts = 0.0;
         public double driveCurrentAmps = 0.0;
 
-        public Rotation2d turnAbsolutePosition = new Rotation2d();
-        public Rotation2d turnPosition = new Rotation2d();
-        public double turnAbsolutePositionRadians = turnAbsolutePosition.getRadians();
+        /** Turn position used by PID controller */
+        public double turnPosition = 0;
+        public double turnAbsolutePositionRadians = 0;
         public double turnVelocityRadiansPerSecond = 0.0;
         public double turnAppliedVolts = 0.0;
         public double turnCurrentAmps = 0.0;

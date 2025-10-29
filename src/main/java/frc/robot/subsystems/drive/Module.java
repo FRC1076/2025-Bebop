@@ -15,6 +15,7 @@ import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Turn;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
@@ -40,7 +41,7 @@ public class Module {
     /* Sets desired state in closed-loop mode */
     public void setDesiredState(SwerveModuleState state){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
-        state.optimize(inputs.turnPosition);
+        state.optimize(Rotation2d.fromRadians(inputs.turnPosition));
         io.setDriveVelocity(
             state.speedMetersPerSecond, 
             driveFFController.calculate(state.speedMetersPerSecond)
@@ -54,7 +55,7 @@ public class Module {
     /* Sets desired state in closed-loop mode with overridden Feedforward */
     public void setDesiredState(SwerveModuleState state, double driveFFVolts, double turnFFVolts){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
-        state.optimize(inputs.turnPosition);
+        state.optimize(Rotation2d.fromRadians(inputs.turnPosition));
         io.setDriveVelocity(
             state.speedMetersPerSecond, 
             driveFFVolts
@@ -87,11 +88,11 @@ public class Module {
     }
 
     public SwerveModulePosition getPosition(){
-        return new SwerveModulePosition(inputs.drivePositionMeters, inputs.turnPosition);
+        return new SwerveModulePosition(inputs.drivePositionMeters, Rotation2d.fromRadians(inputs.turnPosition));
     }
 
     public SwerveModuleState getState(){
-        return new SwerveModuleState(inputs.driveVelocityMetersPerSec, inputs.turnPosition);
+        return new SwerveModuleState(inputs.driveVelocityMetersPerSec, Rotation2d.fromRadians(inputs.turnPosition));
     }
 
     public SwerveModulePosition[] getOdometryModulePositions(){
