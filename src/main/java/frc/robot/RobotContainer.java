@@ -126,9 +126,9 @@ public class RobotContainer {
 
         // TODO: check if driving is reversed
         driveCommand = m_drive.CommandBuilder.driveTeleop(
-            () -> m_driverController.getLeftX(), 
-            () -> m_driverController.getLeftY(), 
-            () -> m_driverController.getRightX(),
+            () -> -m_driverController.getLeftY(), 
+            () -> -m_driverController.getLeftX(), 
+            () -> -m_driverController.getRightX(),
             1,
             1,
             false);

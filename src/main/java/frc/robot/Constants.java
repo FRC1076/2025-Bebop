@@ -176,10 +176,10 @@ public final class Constants {
                 }
             }
             public static enum ModuleConfig {
-                FrontLeft(1,11,21,-0.342041015625),
-                FrontRight(2,12,22,0.193603515625),
-                RearRight(3,13,23,-0.35498046875),
-                RearLeft(4,14,24,-0.264892578125);
+                FrontLeft(1,11,21,0.16259765625),
+                FrontRight(2,12,22,-0.3017578125),
+                RearRight(3,13,23,0.144287109375),
+                RearLeft(4,14,24,0.236328125);
     
                 public final int DrivePort;
                 public final int TurnPort;
