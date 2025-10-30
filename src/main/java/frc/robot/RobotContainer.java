@@ -15,7 +15,7 @@ import frc.robot.Constants.SystemConstants.RobotMode;
 import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
 import frc.robot.Constants.OIConstants.SecondaryControllerStates;
 import frc.robot.commands.Autos;
-import frc.robot.commands.drive.TeleopDriveCommand;
+import frc.robot.commands.drive.TeleopDriveCommandV2;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.SuperstructureCommandFactory;
@@ -25,7 +25,6 @@ import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.GyroIOPigeon;
 import frc.robot.subsystems.drive.ModuleIOHardware;
-import frc.robot.subsystems.drive.ModuleIOHardwareTurnPIDonRIO;
 import frc.robot.subsystems.drive.DriveSubsystem.DriveCommandFactory;
 import frc.robot.subsystems.index.IndexIODisabled;
 import frc.robot.subsystems.index.IndexIOHardware;
@@ -70,7 +69,7 @@ public class RobotContainer {
     private final Superstructure m_superstructure;
 
     // Teleop drive command
-    private final TeleopDriveCommand driveCommand;
+    private final TeleopDriveCommandV2 driveCommand;
 
     // Controllers
     private final SamuraiXboxController m_driverController =

@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.drive.TeleopDriveCommand;
+import frc.robot.commands.drive.TeleopDriveCommandV2;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -107,7 +107,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     /** Field-oriented Closed-loop driving */
     public void driveCLFO(ChassisSpeeds speeds){
-        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, rawGyroRotation);
+        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, rawGyroRotation); // TODO: does this need to be flipped based on alliance?
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speeds, 0.02));
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates,MaxModuleSpeed);
         for (int i = 0; i < 4; i++) {
@@ -229,8 +229,8 @@ public class DriveSubsystem extends SubsystemBase {
             this.drive = drive;
         }
 
-        public TeleopDriveCommand driveTeleop(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier, double transClutchFactor, double rotClutchFactor, boolean useSpeedScaling) {
-            TeleopDriveCommand driveCommand = new TeleopDriveCommand(drive, xSupplier, ySupplier, omegaSupplier, useSpeedScaling);
+        public TeleopDriveCommandV2 driveTeleop(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier, double transClutchFactor, double rotClutchFactor, boolean useSpeedScaling) {
+            TeleopDriveCommandV2 driveCommand = new TeleopDriveCommandV2(drive, drive::driveCLFO, xSupplier, ySupplier, omegaSupplier, useSpeedScaling);
             driveCommand.setClutchFactors(transClutchFactor, rotClutchFactor);
             return driveCommand;
         }

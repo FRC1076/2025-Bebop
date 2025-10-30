@@ -39,6 +39,7 @@ public class TeleopDriveCommand extends Command {
 
     public TeleopDriveCommand(
         DriveSubsystem drive,
+        Consumer<ChassisSpeeds> driveConsumer,
         DoubleSupplier xSupplier, 
         DoubleSupplier ySupplier, 
         DoubleSupplier omegaSupplier,
