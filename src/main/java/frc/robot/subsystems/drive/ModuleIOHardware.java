@@ -200,9 +200,6 @@ public class ModuleIOHardware implements ModuleIO {
 
     @Override
     public void setTurnPosition(double positionRadians, double FFVolts){
-        // TODO: check if the line below (commented out) causes problems
-        // TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
-
         TurnPID.setReference(
             MathUtil.angleModulus(positionRadians),
             ControlType.kPosition,
