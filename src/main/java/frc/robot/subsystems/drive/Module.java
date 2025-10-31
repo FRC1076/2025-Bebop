@@ -38,11 +38,15 @@ public class Module {
         );
     }
 
+    public void resetTurnRelativeEncoder() {
+        io.resetTurnRelativeEncoder();
+    }
+
     /* Sets desired state in closed-loop mode */
     public void setDesiredState(SwerveModuleState state){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
         state.optimize(Rotation2d.fromRadians(inputs.turnPosition));
-        //state.cosineScale(Rotation2d.fromRadians(inputs.turnPosition));
+        state.cosineScale(Rotation2d.fromRadians(inputs.turnPosition));
         io.setDriveVelocity(
             state.speedMetersPerSecond, 
             driveFFController.calculate(state.speedMetersPerSecond)

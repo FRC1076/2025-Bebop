@@ -163,13 +163,14 @@ public final class Constants {
                     public static final double VoltageCompensation = 12;
                     public static final double gearRatio = 12.8;
                     // TODO: check that radians for conversion factors don't break anything
-                    public static final double PositionConversionFactor = (1 / gearRatio) * 2 * Math.PI; // Converts from rotations to radians, calculates out to be 0.4909
-                    public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Converts from RPM to radians/second
+                    public static final double RelativePositionConversionFactor =  (1 / gearRatio) * 2 * Math.PI; // Converts from rotations to radians, calculates out to be 0.4909
+                    public static final double AbsolutePositionConversionFactor = 2*Math.PI;
+                    public static final double VelocityConversionFactor = RelativePositionConversionFactor / 60; // Converts from RPM to radians/second
 
                     // PID constants
-                    public static final double kP = 0.5;
+                    public static final double kP = 2;
                     public static final double kI = 0.0;
-                    public static final double kD = 0.0001;
+                    public static final double kD = 0.05;
 
                     // Feedforward constant
                     public static final double kS = 0.12009; // May be better just to leave this as zero

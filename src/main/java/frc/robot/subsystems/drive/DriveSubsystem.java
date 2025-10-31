@@ -88,6 +88,9 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void resetPose(Pose2d newPose){
+        for(Module module : modules) {
+            module.resetTurnRelativeEncoder();
+        }
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), newPose);
     }
 

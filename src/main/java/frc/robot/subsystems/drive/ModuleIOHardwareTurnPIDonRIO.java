@@ -96,7 +96,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
             .voltageCompensation(Turn.VoltageCompensation);
         turnConfig
             .encoder
-            .positionConversionFactor(Turn.PositionConversionFactor)
+            .positionConversionFactor(Turn.RelativePositionConversionFactor)
             .velocityConversionFactor(Turn.VelocityConversionFactor);
         turnConfig
             .closedLoop
@@ -117,7 +117,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
             .outputCurrentPeriodMs(20);
         
         m_turnMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
+        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor);
         
         SparkMaxConfig driveConfig = new SparkMaxConfig();
         driveConfig
@@ -161,7 +161,7 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
         if (turnPIDEnabled) {
             setTurnVoltsKeepPIDOn(
                 TurnPID.calculate(
-                    MathUtil.angleModulus(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor),
+                    MathUtil.angleModulus(turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor),
                     turnPIDTarget
                 ) + turnFFVolts
             );
@@ -176,8 +176,8 @@ public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
         inputs.driveAppliedVolts = m_driveMotor.getBusVoltage() * m_driveMotor.getAppliedOutput();
         inputs.driveCurrentAmps = m_driveMotor.getOutputCurrent();
         
-        inputs.turnAbsolutePositionRadians = turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor;
-        inputs.turnPosition = turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor;
+        inputs.turnAbsolutePositionRadians = turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor;
+        inputs.turnPosition = turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor;
         inputs.turnVelocityRadiansPerSecond = TurnRelEncoder.getVelocity();
         inputs.turnAppliedVolts = m_turnMotor.getBusVoltage() * m_turnMotor.getAppliedOutput();
         inputs.turnCurrentAmps = m_turnMotor.getOutputCurrent();

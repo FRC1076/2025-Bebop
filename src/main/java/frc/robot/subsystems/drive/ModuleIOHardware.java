@@ -87,7 +87,7 @@ public class ModuleIOHardware implements ModuleIO {
             .voltageCompensation(Turn.VoltageCompensation);
         turnConfig
             .encoder
-            .positionConversionFactor(Turn.PositionConversionFactor)
+            .positionConversionFactor(Turn.RelativePositionConversionFactor)
             .velocityConversionFactor(Turn.VelocityConversionFactor);
         turnConfig
             .closedLoop
@@ -109,7 +109,7 @@ public class ModuleIOHardware implements ModuleIO {
         
         m_turnMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         TurnPID = m_turnMotor.getClosedLoopController();
-        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor);
+        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor);
         
         SparkMaxConfig driveConfig = new SparkMaxConfig();
         driveConfig
@@ -160,7 +160,7 @@ public class ModuleIOHardware implements ModuleIO {
         inputs.driveAppliedVolts = m_driveMotor.getBusVoltage() * m_driveMotor.getAppliedOutput();
         inputs.driveCurrentAmps = m_driveMotor.getOutputCurrent();
         
-        inputs.turnAbsolutePositionRadians = turnAbsolutePosition.getValueAsDouble() * Turn.PositionConversionFactor;
+        inputs.turnAbsolutePositionRadians = turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor;
         inputs.turnPosition = TurnRelEncoder.getPosition();
         inputs.turnVelocityRadiansPerSecond = TurnRelEncoder.getVelocity();
         inputs.turnAppliedVolts = m_turnMotor.getBusVoltage() * m_turnMotor.getAppliedOutput();
@@ -182,6 +182,11 @@ public class ModuleIOHardware implements ModuleIO {
     @Override
     public void setDriveVolts(double volts){
         m_driveMotor.setVoltage(volts);
+    }
+
+    @Override
+    public void resetTurnRelativeEncoder() {
+        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor);
     }
 
     @Override
