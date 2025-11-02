@@ -158,7 +158,8 @@ public class RobotContainer {
 
         // Intake note
         m_driverController.leftTrigger()
-            .whileTrue(superstructureCommands.intake());
+            .whileTrue(superstructureCommands.intake())
+            .onFalse(superstructureCommands.finishIntake());
         
         // Shoot note
         m_driverController.rightTrigger()
