@@ -67,12 +67,12 @@ public final class Constants {
 
         public static class Control {
             // *** TO BE DETERMINED FROM PYTHON CODE OR PHYSICAL TUNING ***
-            public static final double kP = 0;
+            public static final double kP = 0.0005;  // TODO: confirm this value, it's from the Python code
             public static final double kI = 0;
             public static final double kD = 0;
 
             public static final double kS = 0;
-            public static final double kG = 0;
+            public static final double kG = 0.0275; // TODO: confirm this value, it's from the Python code
             public static final double kV = 0;
 
             public static final double kMaxVelocity = 0;
@@ -98,7 +98,7 @@ public final class Constants {
         public static final double kVelocityConversionFactor = (2 * Math.PI) / 60.0; // Go from RPM to radians per second TODO: Confirm
         
         public static class Control {
-            // TODO: Tune or get from Python code
+            // TODO: tune because the Python code did this weirdly
             public static final double kPLeft = 0;
             public static final double kILeft = 0;
             public static final double kDLeft = 0;
