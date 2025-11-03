@@ -20,6 +20,8 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import com.ctre.phoenix6.SignalLogger;
+
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -59,8 +61,13 @@ public class Robot extends LoggedRobot {
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
+    // Turn off signal logger
+    SignalLogger.enableAutoLogging(SystemConstants.enableSignalLogger);
+
     // This raises thread priority after a delay of 20 seconds
-    RobotContainer.threadCommand().schedule();
+    if (SystemConstants.increaseThreadPriority) {
+        RobotContainer.threadCommand().schedule();
+    }
 }
 
     /**

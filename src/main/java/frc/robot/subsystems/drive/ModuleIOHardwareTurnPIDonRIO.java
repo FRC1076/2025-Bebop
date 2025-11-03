@@ -35,14 +35,20 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
-public class ModuleIOHardware implements ModuleIO {
+public class ModuleIOHardwareTurnPIDonRIO implements ModuleIO {
     
     private final SparkMax m_turnMotor;
-    private final SparkClosedLoopController TurnPID;
+    private final PIDController TurnPID;
     private final RelativeEncoder TurnRelEncoder;
+
+    // Stuff for the turn PID controller
+    private double turnPIDTarget = 0;
+    private double turnFFVolts = 0;
+    private boolean turnPIDEnabled = false;
 
     private final SparkMax m_driveMotor;
     private final SparkClosedLoopController DrivePID;
@@ -59,14 +65,18 @@ public class ModuleIOHardware implements ModuleIO {
     private final CANcoder m_turnEncoder;
     private final StatusSignal<Angle> turnAbsolutePosition;
 
-    public ModuleIOHardware(ModuleConfig config){
+    public ModuleIOHardwareTurnPIDonRIO(ModuleConfig config){
 
         m_turnMotor = new SparkMax(config.TurnPort, MotorType.kBrushless);
-        // TurnPID = m_turnMotor.getClosedLoopController();
+        TurnPID = new PIDController(
+            Turn.kP,
+            Turn.kI,
+            Turn.kD
+        );
         TurnRelEncoder = m_turnMotor.getEncoder();
 
         m_driveMotor = new SparkMax(config.DrivePort, MotorType.kBrushless);
-        // DrivePID = m_driveMotor.getClosedLoopController();
+        DrivePID = m_driveMotor.getClosedLoopController();
         DriveRelEncoder = m_driveMotor.getEncoder();
     
         m_turnEncoder = new CANcoder(config.EncoderPort);
@@ -74,11 +84,10 @@ public class ModuleIOHardware implements ModuleIO {
         //Config turn absolute encoder here
         CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
         encoderConfig.FutureProofConfigs = false;
-        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5; // Originally: 1
+        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5; // Originally 1
         encoderConfig.MagnetSensor.MagnetOffset = config.EncoderOffsetRots;
         m_turnEncoder.getConfigurator().apply(encoderConfig);
         turnAbsolutePosition = m_turnEncoder.getAbsolutePosition();
-        turnAbsolutePosition.refresh();
 
         SparkMaxConfig turnConfig = new SparkMaxConfig();
         turnConfig
@@ -96,7 +105,7 @@ public class ModuleIOHardware implements ModuleIO {
             .i(Turn.kI)
             .d(Turn.kD)
             .positionWrappingEnabled(true)
-            .positionWrappingInputRange(-Math.PI, Math.PI); // Originally: 0, 2*Math.PI
+            .positionWrappingInputRange(-Math.PI, Math.PI); // Originally: 0, 2*Math.PI 
         turnConfig
             .signals
             .primaryEncoderPositionAlwaysOn(true)
@@ -108,7 +117,6 @@ public class ModuleIOHardware implements ModuleIO {
             .outputCurrentPeriodMs(20);
         
         m_turnMotor.configure(turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        TurnPID = m_turnMotor.getClosedLoopController();
         TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor);
         
         SparkMaxConfig driveConfig = new SparkMaxConfig();
@@ -137,7 +145,6 @@ public class ModuleIOHardware implements ModuleIO {
             .outputCurrentPeriodMs(20);
         
         m_driveMotor.configure(driveConfig,ResetMode.kResetSafeParameters,PersistMode.kPersistParameters);
-        DrivePID = m_driveMotor.getClosedLoopController();
         DriveRelEncoder.setPosition(0.0);
         
         timestampQueue = OdometryThread.getInstance().makeTimestampQueue();
@@ -150,6 +157,15 @@ public class ModuleIOHardware implements ModuleIO {
     @Override
     public void periodic() {
         turnAbsolutePosition.refresh();
+
+        if (turnPIDEnabled) {
+            setTurnVoltsKeepPIDOn(
+                TurnPID.calculate(
+                    MathUtil.angleModulus(turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor),
+                    turnPIDTarget
+                ) + turnFFVolts
+            );
+        }
     }
 
     @Override
@@ -161,7 +177,7 @@ public class ModuleIOHardware implements ModuleIO {
         inputs.driveCurrentAmps = m_driveMotor.getOutputCurrent();
         
         inputs.turnAbsolutePositionRadians = turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor;
-        inputs.turnPosition = TurnRelEncoder.getPosition();
+        inputs.turnPosition = turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor;
         inputs.turnVelocityRadiansPerSecond = TurnRelEncoder.getVelocity();
         inputs.turnAppliedVolts = m_turnMotor.getBusVoltage() * m_turnMotor.getAppliedOutput();
         inputs.turnCurrentAmps = m_turnMotor.getOutputCurrent();
@@ -185,12 +201,12 @@ public class ModuleIOHardware implements ModuleIO {
     }
 
     @Override
-    public void resetTurnRelativeEncoder() {
-        TurnRelEncoder.setPosition(turnAbsolutePosition.getValueAsDouble() * Turn.AbsolutePositionConversionFactor);
+    public void setTurnVolts(double volts){
+        turnPIDEnabled = false;
+        m_turnMotor.setVoltage(volts);
     }
 
-    @Override
-    public void setTurnVolts(double volts){
+    public void setTurnVoltsKeepPIDOn(double volts) {
         m_turnMotor.setVoltage(volts);
     }
 
@@ -206,13 +222,9 @@ public class ModuleIOHardware implements ModuleIO {
 
     @Override
     public void setTurnPosition(double positionRadians, double FFVolts){
-        TurnPID.setReference(
-            MathUtil.angleModulus(positionRadians),
-            ControlType.kPosition,
-            ClosedLoopSlot.kSlot0,
-            FFVolts,
-            ArbFFUnits.kVoltage
-        );
+        turnPIDTarget = MathUtil.angleModulus(positionRadians);
+        turnFFVolts = FFVolts;
+        turnPIDEnabled = true;
     }
     
 }

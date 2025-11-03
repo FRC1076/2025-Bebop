@@ -9,8 +9,11 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.DriveConstants.moduleTranslations;
 import static frc.robot.Constants.DriveConstants.ModuleConstants.Common.Drive.MaxModuleSpeed;
+
+import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -21,7 +24,10 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.drive.TeleopDriveCommandV2;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -43,6 +49,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
+    public final DriveCommandFactory CommandBuilder;
+
     public DriveSubsystem(
         GyroIO gyroIO,
         ModuleIO FLModuleIO,
@@ -58,6 +66,8 @@ public class DriveSubsystem extends SubsystemBase {
         
 
         OdometryThread.getInstance().start();
+
+        CommandBuilder = new DriveCommandFactory(this);
     }
 
     public SwerveModuleState[] getModuleStates(){
@@ -78,6 +88,9 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void resetPose(Pose2d newPose){
+        for(Module module : modules) {
+            module.resetTurnRelativeEncoder();
+        }
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), newPose);
     }
 
@@ -89,12 +102,24 @@ public class DriveSubsystem extends SubsystemBase {
         for (int i = 0; i < 4; i++) {
             modules[i].setDesiredState(setpointStates[i]);
         }
+
+        SwerveModuleState[] actualStates = {modules[0].getState(), modules[1].getState(), modules[2].getState(), modules[3].getState()};
         Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
+        Logger.recordOutput("SwerveStates/Actual", actualStates);
     }
 
     /** Field-oriented Closed-loop driving */
     public void driveCLFO(ChassisSpeeds speeds){
+        speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, rawGyroRotation); // TODO: does this need to be flipped based on alliance?
+        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(speeds, 0.02));
+        SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates,MaxModuleSpeed);
+        for (int i = 0; i < 4; i++) {
+            modules[i].setDesiredState(setpointStates[i]);
+        }
 
+        SwerveModuleState[] actualStates = {modules[0].getState(), modules[1].getState(), modules[2].getState(), modules[3].getState()};
+        Logger.recordOutput("SwerveStates/Setpoints",setpointStates);
+        Logger.recordOutput("SwerveStates/Actual", actualStates);
     }
 
     /** Reset the current yaw heading of the gyro to zero */
@@ -156,5 +181,77 @@ public class DriveSubsystem extends SubsystemBase {
             states[i] = modules[i].getPosition();
         }
         return states;
+    }
+
+    /* EVERYTHING SYSID */
+    private void runTranslationCharacterization(double output) {
+        for (int i = 0; i < 4; i++) {
+            modules[i].runTranslationCharacterization(output);
+        }
+    }
+
+    private void runSpinCharacterization(double output) {
+        for (int i = 0; i < 4; i++) {
+            modules[i].runSpinCharacterization(output);
+        }
+    }
+
+    /** Translation SysID */
+    private final SysIdRoutine m_SysIdRoutineTranslation = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,
+            Volts.of(4),
+            null,
+            state -> Logger.recordOutput("Drive/sysIdStateTranslation", state.toString()) // Log state to AKit
+        ),
+        new SysIdRoutine.Mechanism(
+            output -> runTranslationCharacterization(output.in(Volts)), null, this)
+    );
+
+    /** Rotation SysID (spins motors only) */
+    private final SysIdRoutine m_SysIdRoutineSpin = new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,
+            Volts.of(4),
+            null,
+            state -> Logger.recordOutput("Drive/sysIdStateSpin", state.toString()) // Log state to AKit
+        ),
+        new SysIdRoutine.Mechanism(
+            output -> runSpinCharacterization(output.in(Volts)), null, this)
+    );
+
+    public DriveCommandFactory getCommandBuilder() {
+        return CommandBuilder;
+    }
+
+    /** Builds the drive commands */
+    public class DriveCommandFactory {
+        public DriveSubsystem drive;
+
+        private DriveCommandFactory(DriveSubsystem drive) {
+            this.drive = drive;
+        }
+
+        public TeleopDriveCommandV2 driveTeleop(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier omegaSupplier, double transClutchFactor, double rotClutchFactor, boolean useSpeedScaling) {
+            TeleopDriveCommandV2 driveCommand = new TeleopDriveCommandV2(drive, drive::driveCLFO, xSupplier, ySupplier, omegaSupplier, useSpeedScaling);
+            driveCommand.setClutchFactors(transClutchFactor, rotClutchFactor);
+            return driveCommand;
+        }
+
+        public Command sysIdQuasistaticTranslation(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineTranslation.quasistatic(direction);
+        }
+
+        public Command sysIdDyanmicTranslation(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineTranslation.dynamic(direction);
+        }
+
+        public Command sysIdQuasistaticSpin(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineSpin.quasistatic(direction);
+        }
+
+        public Command sysIdDyanmicSpin(SysIdRoutine.Direction direction) {
+            return m_SysIdRoutineSpin.dynamic(direction);
+        }
     }
 }

@@ -10,15 +10,27 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public static class OIConstants {
         public static final int kDriverControllerPort = 0;
+        public static final int kSecondaryControllerPort = 1;
 
         public static final double kControllerDeadband = 0.15;
         public static final double kControllerTriggerThreshold = 0.7;
 
         public static final int kBeamBreakPin = 5;
+
+        public static final SecondaryControllerStates secondaryControllerState = SecondaryControllerStates.DRIVETRAIN_SYSID_TRANS;
+
+        public static enum SecondaryControllerStates {
+            DRIVETRAIN_SYSID_TRANS,
+            DRIVETRAIN_SYSID_SPIN,
+            ARM;
+        }
     }
 
     public static class SystemConstants {
-        public static final RobotMode currentMode = RobotMode.SIM;
+        public static final RobotMode currentMode = RobotMode.REAL;
+
+        public static final boolean enableSignalLogger = false;
+        public static final boolean increaseThreadPriority = true;
         
         public static enum RobotMode {
             REAL,
@@ -51,18 +63,20 @@ public final class Constants {
 
         public static final double kToleranceRadians = 0.1; // TODO: Confirm
 
+        public static final double kMaxManualControlVolts = 2;
+
         public static class Control {
             // *** TO BE DETERMINED FROM PYTHON CODE OR PHYSICAL TUNING ***
-            public static final double kP = 0;
+            public static final double kP = 20.626;  // TODO: confirm this value, it's from the Python code
             public static final double kI = 0;
             public static final double kD = 0;
 
             public static final double kS = 0;
-            public static final double kG = 0;
+            public static final double kG = 0.33; // TODO: confirm this value, it's from the Python code
             public static final double kV = 0;
 
-            public static final double kMaxVelocity = 0;
-            public static final double kMaxAcceleration = 0;
+            public static final double kMaxVelocity = Math.PI;
+            public static final double kMaxAcceleration = Math.PI;
         }
     }
 
@@ -84,7 +98,7 @@ public final class Constants {
         public static final double kVelocityConversionFactor = (2 * Math.PI) / 60.0; // Go from RPM to radians per second TODO: Confirm
         
         public static class Control {
-            // TODO: Tune or get from Python code
+            // TODO: tune because the Python code did this weirdly
             public static final double kPLeft = 0;
             public static final double kILeft = 0;
             public static final double kDLeft = 0;
@@ -98,7 +112,12 @@ public final class Constants {
     // TODO: check all the constants in this class
     public static class DriveConstants {
         public static final double maxTranslationSpeedMPS = 2;
-        public static final double maxRotationSpeedRadPerSec = 2;
+        public static final double maxRotationSpeedRadPerSec = 4; // originally set to 2 // Maximum acceptable value appears to be 12
+
+        public static final double singleClutchTranslationFactor = 0.6;
+        public static final double singleClutchRotationFactor = 0.6;
+        public static final double doubleClutchTranslationFactor = 0.35;
+        public static final double doubleClutchRotationFactor = 0.35;
 
         public static final int odometryFrequencyHz = 100;
         public static final double wheelBase = Units.inchesToMeters(27.5);
@@ -122,11 +141,11 @@ public final class Constants {
                     public static final int CurrentLimit = 60;
                     public static final double gearRatio = 6.75;
                     public static final double VoltageCompensation = 12;
-                    public static final double MaxModuleSpeed = 14.0; // Maximum attainable module speed
-                    public static final double WheelRadius = Units.inchesToMeters(4); // Meters
+                    public static final double MaxModuleSpeed = Units.feetToMeters(15.1); // Maximum attainable module speed, from the SDS website
+                    public static final double WheelDiameter = Units.inchesToMeters(4); // Standard SDS wheel
                     public static final double WheelCOF = 1.0; // Coefficient of friction
-                    public static final double PositionConversionFactor = 2 * WheelRadius * Math.PI / gearRatio; // Units: Meters
-                    public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Units: Meters per second
+                    public static final double PositionConversionFactor = WheelDiameter * Math.PI / gearRatio; // Converts from rotations to meters, calculates to be 0.04729
+                    public static final double VelocityConversionFactor = PositionConversionFactor / 60; // Converts from RPM to meters per second, calculates to be 0.0007881
 
                     // PID constants
                     public static final double kP = 0.035;
@@ -143,21 +162,25 @@ public final class Constants {
                     public static final int CurrentLimit = 60;
                     public static final double VoltageCompensation = 12;
                     public static final double gearRatio = 12.8;
-                    public static final double PositionConversionFactor = (1 / gearRatio) * 2 * Math.PI; // Units: Radians TODO: check that radians don't break anything
-                    public static final double VelocityConversionFactor = PositionConversionFactor; // Units: Radians Per Second
+                    // TODO: check that radians for conversion factors don't break anything
+                    public static final double RelativePositionConversionFactor =  (1 / gearRatio) * 2 * Math.PI; // Converts from rotations to radians, calculates out to be 0.4909
+                    public static final double AbsolutePositionConversionFactor = 2*Math.PI;
+                    public static final double VelocityConversionFactor = RelativePositionConversionFactor / 60; // Converts from RPM to radians/second
 
                     // PID constants
-                    public static final double kP = 1;
+                    public static final double kP = 2;
                     public static final double kI = 0.0;
-                    public static final double kD = 0.0001;
+                    public static final double kD = 0.05;
+
+                    // Feedforward constant
+                    public static final double kS = 0.12009; // May be better just to leave this as zero
                 }
             }
             public static enum ModuleConfig {
-    
-                FrontLeft(1,11,21,0.163818359375),
-                FrontRight(2,12,22,0.1982421875),
-                RearRight(3,13,23,-0.345703125),
-                RearLeft(4,14,24,-0.259033203125);
+                FrontLeft(1,11,21,0.16259765625),
+                FrontRight(2,12,22,-0.3017578125),
+                RearRight(3,13,23,0.144287109375),
+                RearLeft(4,14,24,0.236328125);
     
                 public final int DrivePort;
                 public final int TurnPort;
@@ -208,32 +231,32 @@ public final class Constants {
                 0, 
                 0, 
                 -0.4014257, 
-                -471, 
-                576),
+                -368, 
+                450),
 
             /** Pre-shooting state, angle just between subwoofer and mid-high */
             MID_LOW(
                 0, 
                 0, 
                 0, 
-                -400, 
-                489),
+                -327, 
+                400),
 
             /** Pre-shooting state, angle between mid-low and amp */
             MID_HIGH(
                 0, 
                 0, 
                 0.5, 
-                -350, 
-                428),
+                -286, 
+                350),
             
             /** Pre-shooting state for when at the amp, highest shooting state */
             AMP(
                 0, 
                 0, 
                 1.3, 
-                -250, 
-                280),
+                -220, 
+                250),
             
             /** Shoot into the subwoofer */
             SHOOT_SUBWOOFER(

@@ -30,7 +30,7 @@ public class IndexSubsystem extends SubsystemBase {
 
     /** Runs a voltage on the motor */
     public Command runVolts(double volts) {
-        return Commands.run(
+        return Commands.runOnce(
             () -> setVoltage(volts),
             this
         );

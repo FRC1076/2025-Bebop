@@ -10,10 +10,12 @@
 package frc.robot.subsystems.drive;
 
 import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Drive;
+import frc.robot.Constants.DriveConstants.ModuleConstants.Common.Turn;
 
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
@@ -27,6 +29,7 @@ public class Module {
     public Module(ModuleIO io, String ID){
         this.io = io;
         this.ID = ID;
+
         driveFFController = new SimpleMotorFeedforward(
             Drive.kS,
             Drive.kV,
@@ -35,32 +38,50 @@ public class Module {
         );
     }
 
-    /*Sets desired state in closed-loop mode */
+    public void resetTurnRelativeEncoder() {
+        io.resetTurnRelativeEncoder();
+    }
+
+    /* Sets desired state in closed-loop mode */
     public void setDesiredState(SwerveModuleState state){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
-        state.optimize(inputs.turnPosition);
+        state.optimize(Rotation2d.fromRadians(inputs.turnPosition));
+        state.cosineScale(Rotation2d.fromRadians(inputs.turnPosition));
         io.setDriveVelocity(
             state.speedMetersPerSecond, 
             driveFFController.calculate(state.speedMetersPerSecond)
         );
         io.setTurnPosition(
-            state.angle.getRotations(), 
-            0
+            state.angle.getRadians(), 
+            Turn.kS
         );
     }
 
-    /* Sets desired state with overridden Feedforward */
+    /* Sets desired state in closed-loop mode with overridden Feedforward */
     public void setDesiredState(SwerveModuleState state, double driveFFVolts, double turnFFVolts){
         //io.updateInputs(inputs); //Fetches latest data from IO layer
-        state.optimize(inputs.turnPosition);
+        state.optimize(Rotation2d.fromRadians(inputs.turnPosition));
+        state.cosineScale(Rotation2d.fromRadians(inputs.turnPosition));
         io.setDriveVelocity(
             state.speedMetersPerSecond, 
             driveFFVolts
         );
         io.setTurnPosition(
-            state.angle.getRotations(), 
+            state.angle.getRadians(), 
             turnFFVolts
         );
+    }
+
+    /** Runs module with specified output while controlling to zero degrees */
+    public void runTranslationCharacterization(double output) {
+        io.setDriveVolts(output);
+        io.setTurnPosition(0, Turn.kS);
+    }
+
+    /** Runs module with specified output while controlling no translation movement */
+    public void runSpinCharacterization(double output) {
+        io.setDriveVolts(0);
+        io.setTurnVolts(output);
     }
 
     public void stop(){
@@ -73,11 +94,11 @@ public class Module {
     }
 
     public SwerveModulePosition getPosition(){
-        return new SwerveModulePosition(inputs.drivePositionMeters, inputs.turnPosition);
+        return new SwerveModulePosition(inputs.drivePositionMeters, Rotation2d.fromRadians(inputs.turnPosition));
     }
 
     public SwerveModuleState getState(){
-        return new SwerveModuleState(inputs.driveVelocityMetersPerSec, inputs.turnPosition);
+        return new SwerveModuleState(inputs.driveVelocityMetersPerSec, Rotation2d.fromRadians(inputs.turnPosition));
     }
 
     public SwerveModulePosition[] getOdometryModulePositions(){
@@ -86,6 +107,7 @@ public class Module {
 
     /** Must be manually called by DriveSubsystem. WARNING: NOT THREAD-SAFE, SHOULD ONLY BE CALLED FROM MAIN THREAD */
     public void periodic(){
+        io.periodic();
         io.updateInputs(inputs);
         Logger.processInputs("Drive/" + ID, inputs);
         int sampleCount = OdometryThread.getInstance().sampleCount;

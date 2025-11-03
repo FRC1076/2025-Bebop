@@ -20,9 +20,10 @@ public interface ModuleIO {
         public double driveAppliedVolts = 0.0;
         public double driveCurrentAmps = 0.0;
 
-        public Rotation2d turnAbsolutePosition = new Rotation2d();
-        public Rotation2d turnPosition = new Rotation2d();
-        public double turnVelocityRPM = 0.0;
+        /** Turn position used by PID controller */
+        public double turnPosition = 0;
+        public double turnAbsolutePositionRadians = 0;
+        public double turnVelocityRadiansPerSecond = 0.0;
         public double turnAppliedVolts = 0.0;
         public double turnCurrentAmps = 0.0;
 
@@ -33,11 +34,16 @@ public interface ModuleIO {
 
     public abstract void updateInputs(ModuleIOInputs inputs);
 
+    /** Anything that the IO layer needs to be run every loop */
+    public default void periodic() {}
+
     public default void setDriveVolts(double volts) {}
 
     public default void setTurnVolts(double volts) {}
 
     public default void setDriveVelocity(double velocityMetersPerSec, double FFVolts) {}
 
-    public default void setTurnPosition(double positionRots, double FFVolts) {}
+    public default void setTurnPosition(double positionRadians, double FFVolts) {}
+
+    public default void resetTurnRelativeEncoder() {}
 }

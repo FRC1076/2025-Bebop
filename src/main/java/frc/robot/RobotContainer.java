@@ -8,12 +8,14 @@
 
 package frc.robot;
 
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.SystemConstants;
 import frc.robot.Constants.SystemConstants.RobotMode;
 import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
+import frc.robot.Constants.OIConstants.SecondaryControllerStates;
 import frc.robot.commands.Autos;
-import frc.robot.commands.DriveClosedLoopTeleop;
+import frc.robot.commands.drive.TeleopDriveCommandV2;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.SuperstructureCommandFactory;
@@ -23,6 +25,7 @@ import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.GyroIOPigeon;
 import frc.robot.subsystems.drive.ModuleIOHardware;
+import frc.robot.subsystems.drive.DriveSubsystem.DriveCommandFactory;
 import frc.robot.subsystems.index.IndexIODisabled;
 import frc.robot.subsystems.index.IndexIOHardware;
 import frc.robot.subsystems.index.IndexSubsystem;
@@ -40,6 +43,8 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 
 /**
@@ -63,13 +68,17 @@ public class RobotContainer {
     // The Superstructure
     private final Superstructure m_superstructure;
 
-    // Clutches; must be between 0.1 and 1
-    private double translationalClutch = 1;
-    private double rotationalClutch = 1;
+    // Teleop drive command
+    private final TeleopDriveCommandV2 driveCommand;
 
-    // Replace with CommandPS4Controller or CommandJoystick if needed
+    // Controllers
     private final SamuraiXboxController m_driverController =
         new SamuraiXboxController(OIConstants.kDriverControllerPort)
+        .withDeadband(OIConstants.kControllerDeadband)
+        .withTriggerThreshold(OIConstants.kControllerTriggerThreshold);
+
+    private final SamuraiXboxController m_secondaryController = 
+        new SamuraiXboxController(OIConstants.kSecondaryControllerPort)
         .withDeadband(OIConstants.kControllerDeadband)
         .withTriggerThreshold(OIConstants.kControllerTriggerThreshold);
 
@@ -114,19 +123,20 @@ public class RobotContainer {
             m_beamBreak.beamBrokenSupplier()
         );
 
-        m_drive.setDefaultCommand(
-            new DriveClosedLoopTeleop(
-                () -> m_driverController.getLeftY(),
-                () -> m_driverController.getLeftX(), 
-                () -> m_driverController.getRightX(),
-                () -> translationalClutch,
-                () -> rotationalClutch,
-                m_drive
-            )
-        );
+        // TODO: check if driving is reversed
+        driveCommand = m_drive.CommandBuilder.driveTeleop(
+            () -> -m_driverController.getLeftY(), 
+            () -> -m_driverController.getLeftX(), 
+            () -> -m_driverController.getRightX(),
+            1,
+            1,
+            false);
 
         // Configure bindings
         configureDriverBindings();
+
+        // Configure secondary controller bindings
+        configureSecondaryControllerBindings(OIConstants.secondaryControllerState);
     }
 
     /** Bind Triggers from the DriverController to Superstructure Commands. */
@@ -135,9 +145,21 @@ public class RobotContainer {
         
         // TODO: check if all of these should be onTrue or whileTrue
 
+        // Default command is teleop drive
+        m_drive.setDefaultCommand(driveCommand);
+
+        // Apply double clutch
+        m_driverController.rightBumper()
+            .whileTrue(driveCommand.applyDoubleClutch());
+
+        // Apply single clutch
+        m_driverController.leftBumper()
+            .whileTrue(driveCommand.applySingleClutch());
+
         // Intake note
         m_driverController.leftTrigger()
-            .whileTrue(superstructureCommands.intake());
+            .whileTrue(superstructureCommands.intake())
+            .onFalse(superstructureCommands.finishIntake());
         
         // Shoot note
         m_driverController.rightTrigger()
@@ -179,33 +201,68 @@ public class RobotContainer {
             .whileTrue(superstructureCommands.forceForward())
             .onFalse(superstructureCommands.detectMechanismState());
 
-        // Single Clutch; doesn't run while double clutch is active
-        m_driverController.rightBumper()
-            .whileTrue(Commands.run(() -> {
-                translationalClutch = 0.6;
-                rotationalClutch = 0.6;
-            })).and(m_driverController.leftBumper()).negate()
-            .onFalse(Commands.runOnce(() -> {
-                translationalClutch = 1;
-                rotationalClutch = 1;
-            })).and(m_driverController.leftBumper()).negate();
-
-        // Double clutch
-        m_driverController.leftBumper()
-            .whileTrue(Commands.run(() -> {
-                translationalClutch = 0.35;
-                rotationalClutch = 0.35;
-            }))            
-            .onFalse(Commands.runOnce(() -> {
-                translationalClutch = 1;
-                rotationalClutch = 1;
-            })).and(m_driverController.rightBumper()).negate();
-
         // Re-zero the gyro
         m_driverController.start()
             .onTrue(
                 Commands.runOnce(() -> m_drive.rezeroGyro())
             );
+    }
+
+    private void configureSecondaryControllerBindings(SecondaryControllerStates state) {
+        DriveCommandFactory driveCommandBuilder = m_drive.getCommandBuilder();
+
+        if (state == SecondaryControllerStates.DRIVETRAIN_SYSID_TRANS) {
+            m_secondaryController.a()
+                .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticTranslation(Direction.kForward));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticTranslation(Direction.kReverse));
+
+            m_secondaryController.b()
+                .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicTranslation(Direction.kForward));
+
+            m_secondaryController.b()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicTranslation(Direction.kReverse));
+        } else if (state == SecondaryControllerStates.DRIVETRAIN_SYSID_SPIN) {
+            m_secondaryController.a()
+                .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticSpin(Direction.kForward));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdQuasistaticSpin(Direction.kReverse));
+
+            m_secondaryController.b()
+                .and(m_secondaryController.x())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicSpin(Direction.kForward));
+
+            m_secondaryController.b()
+                .and(m_secondaryController.y())
+                .whileTrue(driveCommandBuilder.sysIdDyanmicSpin(Direction.kReverse));
+        } else if (state == SecondaryControllerStates.ARM) {
+            new Trigger(() -> Math.abs(m_secondaryController.getLeftY()) > 0.01)
+                .whileTrue(m_arm.runVolts(m_secondaryController.getLeftY() * ArmConstants.kMaxManualControlVolts));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.x())
+                .whileTrue(m_arm.armSysIdQuasistatic(Direction.kForward));
+
+            m_secondaryController.a()
+                .and(m_secondaryController.y())
+                .whileTrue(m_arm.armSysIdQuasistatic(Direction.kReverse));
+            
+            m_secondaryController.b()
+                .and(m_secondaryController.x())
+                .whileTrue(m_arm.armSysIdDynamic(Direction.kForward));
+            
+            m_secondaryController.b()
+                .and(m_secondaryController.y())
+                .whileTrue(m_arm.armSysIdDynamic(Direction.kReverse));
+        }
     }
 
     /**

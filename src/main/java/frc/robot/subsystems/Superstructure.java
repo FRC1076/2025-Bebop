@@ -224,6 +224,17 @@ public class Superstructure {
             );
         }
 
+        /** Command to be scheduled once intaking is complete.
+         *  Does nothing if the robot has a note,
+         *  but returns to the home state if the robot does not
+         */
+        public Command finishIntake() {
+            return Commands.either(
+                Commands.none(), 
+                home(), 
+                superstructure.superState.hasNote);
+        }
+
         /** Command to go to the subwoofer pre-scoring state */
         public Command subwoofer() {
             return applyStateAllParallel(MechanismState.SUBWOOFER);

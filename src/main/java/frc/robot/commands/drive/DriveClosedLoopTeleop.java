@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.drive;
 
 import java.util.function.DoubleSupplier;
 
@@ -58,7 +58,7 @@ public class DriveClosedLoopTeleop extends Command {
             omegaSupplier.getAsDouble() * DriveConstants.maxTranslationSpeedMPS
         );
 
-        m_subsystem.driveCLCO(
+        m_subsystem.driveCLFO(
             speeds
         );
     }

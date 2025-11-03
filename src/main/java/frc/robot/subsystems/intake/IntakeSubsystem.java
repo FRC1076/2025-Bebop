@@ -30,7 +30,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     /** Runs the motor at the desired voltage */
     public Command runVolts(double volts) {
-        return Commands.run(
+        return Commands.runOnce(
             () -> setVoltage(volts),
             this
         );

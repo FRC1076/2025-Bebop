@@ -14,7 +14,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import static frc.robot.Constants.DriveConstants.GyroConstants.kGyroPort;
-import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static frc.robot.Constants.DriveConstants.odometryFrequencyHz;
 
@@ -41,7 +41,7 @@ public class GyroIOPigeon implements GyroIO {
         yaw.setUpdateFrequency(odometryFrequencyHz);
         yawVelocity.setUpdateFrequency(50);
         //m_gyro.optimizeBusUtilization();
-        yawPositionQueue = OdometryThread.getInstance().registerSignal(() -> yaw.getValue().in(Degrees));
+        yawPositionQueue = OdometryThread.getInstance().registerSignal(() -> yaw.getValue().in(Radians));
         yawTimestampQueue = OdometryThread.getInstance().makeTimestampQueue();
     }
 
