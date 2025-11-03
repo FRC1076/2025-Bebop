@@ -63,20 +63,20 @@ public final class Constants {
 
         public static final double kToleranceRadians = 0.1; // TODO: Confirm
 
-        public static final double kMaxManualControlVolts = 4;
+        public static final double kMaxManualControlVolts = 2;
 
         public static class Control {
             // *** TO BE DETERMINED FROM PYTHON CODE OR PHYSICAL TUNING ***
-            public static final double kP = 0.0005;  // TODO: confirm this value, it's from the Python code
+            public static final double kP = 20.626;  // TODO: confirm this value, it's from the Python code
             public static final double kI = 0;
             public static final double kD = 0;
 
             public static final double kS = 0;
-            public static final double kG = 0.0275; // TODO: confirm this value, it's from the Python code
+            public static final double kG = 0.33; // TODO: confirm this value, it's from the Python code
             public static final double kV = 0;
 
-            public static final double kMaxVelocity = 0;
-            public static final double kMaxAcceleration = 0;
+            public static final double kMaxVelocity = Math.PI;
+            public static final double kMaxAcceleration = Math.PI;
         }
     }
 
