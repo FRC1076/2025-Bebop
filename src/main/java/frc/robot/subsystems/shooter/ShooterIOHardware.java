@@ -39,7 +39,7 @@ public class ShooterIOHardware implements ShooterIO {
                 .velocityConversionFactor(ShooterConstants.kVelocityConversionFactor);
 
         m_leftMotor.configure(
-            m_leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            m_leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
         m_rightMotorConfig = new SparkMaxConfig();
         m_rightMotorConfig
@@ -51,7 +51,7 @@ public class ShooterIOHardware implements ShooterIO {
                 .velocityConversionFactor(ShooterConstants.kVelocityConversionFactor);
 
         m_rightMotor.configure(
-            m_rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            m_rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
         m_leftMotorEncoder = m_leftMotor.getEncoder();
         m_rightMotorEncoder = m_rightMotor.getEncoder();

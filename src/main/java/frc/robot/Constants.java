@@ -75,8 +75,8 @@ public final class Constants {
             public static final double kG = 0.33; // TODO: confirm this value, it's from the Python code
             public static final double kV = 0;
 
-            public static final double kMaxVelocity = Math.PI;
-            public static final double kMaxAcceleration = Math.PI;
+            public static final double kMaxVelocity = 4*Math.PI;
+            public static final double kMaxAcceleration = 8*Math.PI;
         }
     }
 
@@ -90,8 +90,8 @@ public final class Constants {
         public static final int kLeftMotorCanId = 28;
         public static final int kRightMotorCanId = 8;
 
-        public static final boolean kLeftMotorInverted = false; // TODO: Confirm
-        public static final boolean kRightMotorInverted = false; // TODO: Confirm
+        public static final boolean kLeftMotorInverted = true; // TODO: Confirm
+        public static final boolean kRightMotorInverted = true; // TODO: Confirm
 
         public static final int kCurrentLimitAmps = 40;
 
@@ -99,11 +99,11 @@ public final class Constants {
         
         public static class Control {
             // TODO: tune because the Python code did this weirdly
-            public static final double kPLeft = 0;
+            public static final double kPLeft = 0.028;
             public static final double kILeft = 0;
             public static final double kDLeft = 0;
 
-            public static final double kPRight = 0;
+            public static final double kPRight = 0.03;
             public static final double kIRight = 0;
             public static final double kDRight = 0;
         }
@@ -111,8 +111,10 @@ public final class Constants {
 
     // TODO: check all the constants in this class
     public static class DriveConstants {
-        public static final double maxTranslationSpeedMPS = 2;
+        public static final double maxTranslationSpeedMPS = Units.feetToMeters(5);
         public static final double maxRotationSpeedRadPerSec = 4; // originally set to 2 // Maximum acceptable value appears to be 12
+
+        public static final boolean useSpeedScaling = true;
 
         public static final double singleClutchTranslationFactor = 0.6;
         public static final double singleClutchRotationFactor = 0.6;
@@ -231,7 +233,7 @@ public final class Constants {
                 0, 
                 0, 
                 -0.4014257, 
-                -368, 
+                368, 
                 450),
 
             /** Pre-shooting state, angle just between subwoofer and mid-high */
@@ -239,7 +241,7 @@ public final class Constants {
                 0, 
                 0, 
                 0, 
-                -327, 
+                327, 
                 400),
 
             /** Pre-shooting state, angle between mid-low and amp */
@@ -247,7 +249,7 @@ public final class Constants {
                 0, 
                 0, 
                 0.5, 
-                -286, 
+                286, 
                 350),
             
             /** Pre-shooting state for when at the amp, highest shooting state */
@@ -255,7 +257,7 @@ public final class Constants {
                 0, 
                 0, 
                 1.3, 
-                -220, 
+                220, 
                 250),
             
             /** Shoot into the subwoofer */

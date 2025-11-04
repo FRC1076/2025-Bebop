@@ -72,8 +72,10 @@ public class ShooterSubsystem extends SubsystemBase {
             inputs.leftMotorPidTargetRadPerSec = leftPidTargetRadPerSec;
             inputs.rightMotorPidTargetRadPerSec = rightPidTargetRadPerSec;
 
-            leftPidController.calculate(inputs.leftEncoderVelocityRadPerSec, leftPidTargetRadPerSec);
-            rightPidController.calculate(inputs.rightEncoderVelocityRadPerSec, rightPidTargetRadPerSec);
+            setVoltage(
+                rightPidController.calculate(inputs.rightEncoderVelocityRadPerSec, rightPidTargetRadPerSec),
+                leftPidController.calculate(inputs.leftEncoderVelocityRadPerSec, leftPidTargetRadPerSec));
+            
         }
 
         Logger.processInputs("Shooter", inputs);

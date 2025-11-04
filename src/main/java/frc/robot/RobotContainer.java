@@ -9,6 +9,7 @@
 package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.SystemConstants;
 import frc.robot.Constants.SystemConstants.RobotMode;
@@ -130,7 +131,7 @@ public class RobotContainer {
             () -> -m_driverController.getRightX(),
             1,
             1,
-            false);
+            DriveConstants.useSpeedScaling);
 
         // Configure bindings
         configureDriverBindings();
@@ -184,12 +185,12 @@ public class RobotContainer {
         // Manually move the arm up
         m_driverController.povUp()
             .whileTrue(superstructureCommands.armUpManual())
-            .onFalse(superstructureCommands.detectMechanismState());
+            .onFalse(superstructureCommands.endArmManual());
 
         // Manually move the arm down
         m_driverController.povDown()
             .whileTrue(superstructureCommands.armDownManual())
-            .onFalse(superstructureCommands.detectMechanismState());
+            .onFalse(superstructureCommands.endArmManual());
 
         // Force all rollers (intake, index, shooter) to run backward
         m_driverController.povLeft()

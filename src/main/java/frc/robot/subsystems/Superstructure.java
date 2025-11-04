@@ -307,10 +307,12 @@ public class Superstructure {
 
         /** Manually move the arm up */
         public Command armUpManual() {
-            return Commands.run(
-                () -> m_arm.setVoltage(SuperstructureConstants.kArmManualControlVoltage),
+            return Commands.sequence(
+                Commands.runOnce(() -> m_arm.setRunPid(false)),
+                Commands.run(
+                    () -> m_arm.setVoltage(SuperstructureConstants.kArmManualControlVoltage),
                 m_arm
-            );
+            ));
         }
         
         /** Manually move the arm down */
@@ -318,6 +320,17 @@ public class Superstructure {
             return Commands.run(
                 () -> m_arm.setVoltage(SuperstructureConstants.kArmManualControlVoltage * -1),
                 m_arm
+            );
+        }
+
+        /** End arm manual control */
+        public Command endArmManual() {
+            return Commands.sequence(
+                Commands.runOnce(
+                    () -> m_arm.setVoltage(0),
+                    m_arm
+                ),
+                detectMechanismState()
             );
         }
     }

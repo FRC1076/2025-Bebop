@@ -41,12 +41,12 @@ public class ArmIOHardware implements ArmIO {
             .idleMode(IdleMode.kBrake);
 
         m_followMotorConfig
-            .follow(m_leadMotor)
-            .inverted(ArmConstants.kLeadMotorInverted != ArmConstants.kFollowMotorInverted)
+            .inverted(ArmConstants.kFollowMotorInverted)
             .smartCurrentLimit(ArmConstants.kCurrentLimitAmps)
             .idleMode(IdleMode.kBrake);
 
-        m_leadMotor.configure(m_leadMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+        m_leadMotor.configure(m_leadMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        m_followMotor.configure(m_followMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
         m_relativeEncoder = m_leadMotor.getEncoder();
     }
@@ -64,6 +64,7 @@ public class ArmIOHardware implements ArmIO {
     @Override
     public void setVoltage(double volts) {
         m_leadMotor.setVoltage(volts);
+        m_followMotor.setVoltage(volts);
     }
 
     @Override
