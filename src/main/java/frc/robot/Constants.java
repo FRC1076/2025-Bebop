@@ -63,8 +63,6 @@ public final class Constants {
 
         public static final double kToleranceRadians = 0.1; // TODO: Confirm
 
-        public static final double kMaxManualControlVolts = 2;
-
         public static class Control {
             // *** TO BE DETERMINED FROM PYTHON CODE OR PHYSICAL TUNING ***
             public static final double kP = 20.626;  // TODO: confirm this value, it's from the Python code
@@ -203,7 +201,7 @@ public final class Constants {
         public static final double kArmMoveDebounceTimeAfterShoot = 0.2;
 
         // Constants for manual control TODO: tune
-        public static final double kIntakeManualControlVoltage = 5;
+        public static final double kIntakeManualControlVoltage = 12;
         public static final double kArmManualControlVoltage = 4;
         public static final double kIndexManualControlVoltage = 5;
         public static final double kShooterLeftManualControlVoltage = 6;
@@ -222,7 +220,7 @@ public final class Constants {
 
             /** Pick up a note from the ground */
             INTAKE(
-                10, 
+                12, 
                 4, 
                 -0.6457718, 
                 0, 
