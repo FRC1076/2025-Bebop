@@ -305,6 +305,14 @@ public class Superstructure {
             );
         }
 
+        /** End manual control of rollers */
+        public Command endRollerManualControl() {
+            return Commands.sequence(
+                detectMechanismState(),
+                applyStateNoArmMove(superState.mechanismState)
+            );
+        }
+
         /** Manually move the arm up */
         public Command armUpManual() {
             return Commands.sequence(

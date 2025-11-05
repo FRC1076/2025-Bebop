@@ -195,12 +195,12 @@ public class RobotContainer {
         // Force all rollers (intake, index, shooter) to run backward
         m_driverController.povLeft()
             .whileTrue(superstructureCommands.forceBackward())
-            .onFalse(superstructureCommands.detectMechanismState());
+            .onFalse(superstructureCommands.endRollerManualControl());
         
         // Force all rollers (intake, index, shooter) to run forward
         m_driverController.povRight()
             .whileTrue(superstructureCommands.forceForward())
-            .onFalse(superstructureCommands.detectMechanismState());
+            .onFalse(superstructureCommands.endRollerManualControl());
 
         // Re-zero the gyro
         m_driverController.start()
