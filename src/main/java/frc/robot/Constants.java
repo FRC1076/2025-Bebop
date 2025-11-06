@@ -246,7 +246,7 @@ public final class Constants {
             MID_HIGH(
                 0, 
                 0, 
-                0.5, 
+                0.8, 
                 286, 
                 350),
             

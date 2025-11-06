@@ -68,7 +68,7 @@ public class ShooterSubsystem extends SubsystemBase {
         io.updateInputs(inputs);
 
         inputs.pidRunning = runPid;
-        if (runPid) {
+        if (runPid && leftPidTargetRadPerSec != 0 && rightPidTargetRadPerSec != 0) {
             inputs.leftMotorPidTargetRadPerSec = leftPidTargetRadPerSec;
             inputs.rightMotorPidTargetRadPerSec = rightPidTargetRadPerSec;
 
@@ -76,6 +76,8 @@ public class ShooterSubsystem extends SubsystemBase {
                 rightPidController.calculate(inputs.rightEncoderVelocityRadPerSec, rightPidTargetRadPerSec),
                 leftPidController.calculate(inputs.leftEncoderVelocityRadPerSec, leftPidTargetRadPerSec));
             
+        } else if (runPid) {
+            stop();
         }
 
         Logger.processInputs("Shooter", inputs);
