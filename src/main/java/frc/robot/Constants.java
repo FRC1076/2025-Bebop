@@ -198,7 +198,7 @@ public final class Constants {
     }
 
     public static class SuperstructureConstants {
-        public static final double kArmMoveDebounceTimeAfterShoot = 0.2;
+        public static final double kArmMoveDebounceTimeAfterShoot = 0.1;
 
         // Constants for manual control TODO: tune
         public static final double kIntakeManualControlVoltage = 12;
