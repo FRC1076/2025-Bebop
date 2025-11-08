@@ -168,12 +168,12 @@ public final class Constants {
                     public static final double VelocityConversionFactor = RelativePositionConversionFactor / 60; // Converts from RPM to radians/second
 
                     // PID constants
-                    public static final double kP = 2;
+                    public static final double kP = 3;
                     public static final double kI = 0.0;
                     public static final double kD = 0.05;
 
                     // Feedforward constant
-                    public static final double kS = 0.12009; // May be better just to leave this as zero
+                    public static final double kS = 0.012009; // May be better just to leave this as zero
                 }
             }
             public static enum ModuleConfig {
