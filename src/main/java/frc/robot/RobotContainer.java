@@ -14,6 +14,7 @@ import frc.robot.Constants.SuperstructureConstants;
 import frc.robot.Constants.SystemConstants;
 import frc.robot.Constants.SystemConstants.RobotMode;
 import frc.robot.Constants.DriveConstants.ModuleConstants.ModuleConfig;
+import frc.robot.Constants.LEDConstants.LEDState;
 import frc.robot.Constants.OIConstants.SecondaryControllerStates;
 import frc.robot.commands.Autos;
 import frc.robot.commands.drive.TeleopDriveCommandV2;
@@ -33,6 +34,9 @@ import frc.robot.subsystems.index.IndexSubsystem;
 import frc.robot.subsystems.intake.IntakeIODisabled;
 import frc.robot.subsystems.intake.IntakeIOHardware;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.led.LEDIODigitalPins;
+import frc.robot.subsystems.led.LEDIODisabled;
+import frc.robot.subsystems.led.LEDSubsystem;
 import frc.robot.subsystems.shooter.ShooterIODisabled;
 import frc.robot.subsystems.shooter.ShooterIOHardware;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -62,6 +66,7 @@ public class RobotContainer {
     private final IndexSubsystem m_index;
     private final IntakeSubsystem m_intake;
     private final ShooterSubsystem m_shooter;
+    private final LEDSubsystem m_leds;
 
     // The beam break
     private final BeamBreak m_beamBreak;
@@ -92,6 +97,7 @@ public class RobotContainer {
             m_index = new IndexSubsystem(new IndexIOHardware());
             m_intake = new IntakeSubsystem(new IntakeIOHardware());
             m_shooter = new ShooterSubsystem(new ShooterIOHardware());
+            m_leds = new LEDSubsystem(new LEDIODigitalPins());
 
             m_drive = new DriveSubsystem(
                 new GyroIOPigeon(),
@@ -105,6 +111,7 @@ public class RobotContainer {
             m_index = new IndexSubsystem(new IndexIODisabled());
             m_intake = new IntakeSubsystem(new IntakeIODisabled());
             m_shooter = new ShooterSubsystem(new ShooterIODisabled());
+            m_leds = new LEDSubsystem(new LEDIODisabled());
 
             // TODO: replace Drive with disabled?
             m_drive = new DriveSubsystem(
@@ -135,6 +142,9 @@ public class RobotContainer {
 
         // Configure bindings
         configureDriverBindings();
+
+        // Configure LED bindings
+        configureLEDBindings();
 
         // Configure secondary controller bindings
         configureSecondaryControllerBindings(OIConstants.secondaryControllerState);
@@ -207,6 +217,12 @@ public class RobotContainer {
             .onTrue(
                 Commands.runOnce(() -> m_drive.rezeroGyro())
             );
+    }
+
+    private void configureLEDBindings() {
+        new Trigger(m_beamBreak.beamBrokenSupplier())
+            .onTrue(m_leds.setStateCommand(LEDState.PURPLE_FLASH))
+            .onFalse(m_leds.setStateCommand(LEDState.PURPLE));
     }
 
     private void configureSecondaryControllerBindings(SecondaryControllerStates state) {

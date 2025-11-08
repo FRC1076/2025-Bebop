@@ -314,4 +314,30 @@ public final class Constants {
             }
         }
     }
+
+    public static class LEDConstants {
+        public static final int kLEDPin1 = 0;
+        public static final int kLEDPin2 = 0;
+        public static final int kLEDPin3 = 0;
+
+        public enum LEDState {
+            PURPLE(true, false, false),
+            PURPLE_FLASH(false, true, false),
+            ORANGE_LEFT(true, true, false),
+            ORANGE_RIGHT(false, false, true),
+            ORANGE_FLASH(true, false, true),
+            GREEN_FLASH(false, true, true),
+            OFF(false, false, false);
+
+            public final boolean pin1State;
+            public final boolean pin2State;
+            public final boolean pin3State;
+
+            private LEDState(boolean p1, boolean p2, boolean p3) {
+                pin1State = p1;
+                pin2State = p2;
+                pin3State = p3;
+            }
+        }
+    }
 }
