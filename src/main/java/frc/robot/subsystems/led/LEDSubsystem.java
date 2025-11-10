@@ -26,7 +26,7 @@ public class LEDSubsystem extends SubsystemBase {
         return Commands.runOnce(
             () -> setState(state),
             this
-        );
+        ).ignoringDisable(true);
     }
 
     public Command setTempStateTimed(LEDState state, double seconds) {
@@ -34,6 +34,6 @@ public class LEDSubsystem extends SubsystemBase {
             () -> setState(state), 
             () -> setState(previousState),
             this
-        ).withTimeout(seconds);
+        ).withTimeout(seconds).ignoringDisable(true);
     }
 }
