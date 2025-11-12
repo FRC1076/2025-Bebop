@@ -316,9 +316,9 @@ public final class Constants {
     }
 
     public static class LEDConstants {
-        public static final int kLEDPin1 = 0;
-        public static final int kLEDPin2 = 0;
-        public static final int kLEDPin3 = 0;
+        public static final int kLEDPin1 = 7;
+        public static final int kLEDPin2 = 8;
+        public static final int kLEDPin3 = 9;
 
         public enum LEDState {
             PURPLE(true, false, false),
