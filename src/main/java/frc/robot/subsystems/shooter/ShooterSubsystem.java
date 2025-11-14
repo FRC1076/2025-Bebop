@@ -9,6 +9,7 @@ import frc.robot.Constants.ShooterConstants.Control;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,6 +20,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private PIDController leftPidController;
     private PIDController rightPidController;
+    private SimpleMotorFeedforward ffController;
     private double leftPidTargetRadPerSec = 0;
     private double rightPidTargetRadPerSec = 0;
     private boolean runPid = false;
@@ -36,6 +38,12 @@ public class ShooterSubsystem extends SubsystemBase {
             Control.kPRight,
             Control.kIRight,
             Control.kDRight
+        );
+
+        ffController = new SimpleMotorFeedforward(
+            Control.kS,
+            Control.kV,
+            Control.kA
         );
     }
 
@@ -73,8 +81,9 @@ public class ShooterSubsystem extends SubsystemBase {
             inputs.rightMotorPidTargetRadPerSec = rightPidTargetRadPerSec;
 
             setVoltage(
-                rightPidController.calculate(inputs.rightEncoderVelocityRadPerSec, rightPidTargetRadPerSec),
-                leftPidController.calculate(inputs.leftEncoderVelocityRadPerSec, leftPidTargetRadPerSec));
+                rightPidController.calculate(inputs.rightEncoderVelocityRadPerSec, rightPidTargetRadPerSec) + ffController.calculate(rightPidTargetRadPerSec),
+                leftPidController.calculate(inputs.leftEncoderVelocityRadPerSec, leftPidTargetRadPerSec) + ffController.calculate(leftPidTargetRadPerSec)
+            );
             
         } else if (runPid) {
             stop();

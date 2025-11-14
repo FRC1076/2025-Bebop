@@ -104,6 +104,10 @@ public final class Constants {
             public static final double kPRight = 0.03;
             public static final double kIRight = 0;
             public static final double kDRight = 0;
+
+            public static final double kS = 0;
+            public static final double kV = 0.0025;
+            public static final double kA = 0;
         }
     }
 
@@ -203,9 +207,9 @@ public final class Constants {
         // Constants for manual control TODO: tune
         public static final double kIntakeManualControlVoltage = 12;
         public static final double kArmManualControlVoltage = 4;
-        public static final double kIndexManualControlVoltage = 5;
-        public static final double kShooterLeftManualControlVoltage = 6;
-        public static final double kShooterRightManualControlVoltage = 6;
+        public static final double kIndexManualControlVoltage = 8;
+        public static final double kShooterLeftManualControlVoltage = 9;
+        public static final double kShooterRightManualControlVoltage = 9;
 
         public enum MechanismState {
             // TODO: Tune constants, especially shooting speeds
