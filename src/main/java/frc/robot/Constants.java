@@ -50,7 +50,7 @@ public final class Constants {
         public static final int kFollowMotorCANId = 7;
 
         public static final int kAbsoluteEncoderChannel = 0;
-        public static final double kAbsoluteEncoderZero = Units.degreesToRadians(165.7);
+        public static final double kAbsoluteEncoderZero = 1.05;
         public static final double kAbsoluteEncoderShift = Units.degreesToRadians(20);
 
         public static final boolean kLeadMotorInverted = false;
