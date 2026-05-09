@@ -42,7 +42,7 @@ public final class Constants {
     public static class IntakeConstants {
         public static final int kIntakeMotorCANId = 5;
         public static final boolean kIntakeMotorInverted = false;
-        public static final int kIntakeMotorCurrentLimit = 20;
+        public static final int kIntakeMotorCurrentLimit = 40;
     }
     
     public static class ArmConstants {
@@ -50,7 +50,7 @@ public final class Constants {
         public static final int kFollowMotorCANId = 7;
 
         public static final int kAbsoluteEncoderChannel = 0;
-        public static final double kAbsoluteEncoderZero = 1.05;
+        public static final double kAbsoluteEncoderZero = 1.1;
         public static final double kAbsoluteEncoderShift = Units.degreesToRadians(20);
 
         public static final boolean kLeadMotorInverted = false;
@@ -89,7 +89,9 @@ public final class Constants {
         public static final int kRightMotorCanId = 8;
 
         public static final boolean kLeftMotorInverted = true; // TODO: Confirm
-        public static final boolean kRightMotorInverted = true; // TODO: Confirm
+        public static final boolean kRightMotorInverted = false; // TODO: Confirm
+
+        public static final int kEncoderAverageDepth = 10;
 
         public static final int kCurrentLimitAmps = 40;
 
@@ -97,16 +99,16 @@ public final class Constants {
         
         public static class Control {
             // TODO: tune because the Python code did this weirdly
-            public static final double kPLeft = 0.028;
+            public static final double kPLeft = 0;
             public static final double kILeft = 0;
             public static final double kDLeft = 0;
 
-            public static final double kPRight = 0.03;
+            public static final double kPRight = 0;
             public static final double kIRight = 0;
             public static final double kDRight = 0;
 
             public static final double kS = 0;
-            public static final double kV = 0.0025;
+            public static final double kV = 0.021;
             public static final double kA = 0;
         }
     }
@@ -235,24 +237,24 @@ public final class Constants {
                 0, 
                 0, 
                 -0.4014257, 
-                368, 
-                450),
+                368 * 0.6, 
+                450 * 0.6),
 
             /** Pre-shooting state, angle just between subwoofer and mid-high */
             MID_LOW(
                 0, 
                 0, 
                 0, 
-                327, 
-                400),
+                327 * 0.6, 
+                400 * 0.6),
 
             /** Pre-shooting state, angle between mid-low and amp */
             MID_HIGH(
                 0, 
                 0, 
                 0.8, 
-                286, 
-                350),
+                286 * 0.6, 
+                350 * 0.6),
             
             /** Pre-shooting state for when at the amp, highest shooting state */
             AMP(

@@ -36,7 +36,8 @@ public class ShooterIOHardware implements ShooterIO {
             .smartCurrentLimit(ShooterConstants.kCurrentLimitAmps)
             .voltageCompensation(12)
             .encoder
-                .velocityConversionFactor(ShooterConstants.kVelocityConversionFactor);
+                .velocityConversionFactor(ShooterConstants.kVelocityConversionFactor)
+                .quadratureAverageDepth(ShooterConstants.kEncoderAverageDepth);
 
         m_leftMotor.configure(
             m_leftMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
@@ -48,7 +49,8 @@ public class ShooterIOHardware implements ShooterIO {
             .smartCurrentLimit(ShooterConstants.kCurrentLimitAmps)
             .voltageCompensation(12)
             .encoder
-                .velocityConversionFactor(ShooterConstants.kVelocityConversionFactor);
+                .velocityConversionFactor(ShooterConstants.kVelocityConversionFactor)
+                .quadratureAverageDepth(ShooterConstants.kEncoderAverageDepth);
 
         m_rightMotor.configure(
             m_rightMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
