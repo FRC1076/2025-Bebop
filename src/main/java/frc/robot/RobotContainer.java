@@ -42,6 +42,7 @@ import frc.robot.subsystems.shooter.ShooterIOHardware;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 import lib.hardware.BeamBreak;
+import lib.hardware.BeamBreakHijacked;
 import lib.hardware.hid.SamuraiXboxController;
 
 import edu.wpi.first.wpilibj.Threads;
@@ -69,7 +70,7 @@ public class RobotContainer {
     private final LEDSubsystem m_leds;
 
     // The beam break
-    private final BeamBreak m_beamBreak;
+    private final BeamBreakHijacked m_beamBreak;
 
     // The Superstructure
     private final Superstructure m_superstructure;
@@ -90,7 +91,7 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
-        m_beamBreak = new BeamBreak(OIConstants.kBeamBreakPin);
+        m_beamBreak = new BeamBreakHijacked(OIConstants.kBeamBreakPin);
 
         if (SystemConstants.currentMode == RobotMode.REAL) {
             m_arm = new ArmSubsystem(new ArmIOHardware());
@@ -133,9 +134,9 @@ public class RobotContainer {
 
         // TODO: check if driving is reversed
         driveCommand = m_drive.CommandBuilder.driveTeleop(
-            () -> -m_driverController.getLeftY(), 
-            () -> -m_driverController.getLeftX(), 
-            () -> -m_driverController.getRightX(),
+            () -> -m_driverController.getLeftY() * 0, 
+            () -> -m_driverController.getLeftX() * 0, 
+            () -> -m_driverController.getRightX() * 0,
             1,
             1,
             DriveConstants.useSpeedScaling);
@@ -170,11 +171,18 @@ public class RobotContainer {
         // Intake note
         m_driverController.leftTrigger()
             .whileTrue(superstructureCommands.intake())
-            .onFalse(superstructureCommands.finishIntake());
+            .onTrue(Commands.runOnce(() -> m_beamBreak.setBeamBroken(false)))
+            .onFalse(
+                Commands.parallel(
+                    superstructureCommands.finishIntake(),
+                    Commands.runOnce(() -> m_beamBreak.setBeamBroken(true))
+                )
+            );
         
         // Shoot note
         m_driverController.rightTrigger()
-            .whileTrue(superstructureCommands.shoot());
+            .whileTrue(superstructureCommands.shoot())
+            .onFalse(Commands.runOnce(() -> m_beamBreak.setBeamBroken(false)));
 
         // Go to subwoofer position
         m_driverController.a()
